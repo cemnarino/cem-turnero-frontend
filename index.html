@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestión de Consultorios – CEM Nariño</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet" />
+    <script>
+      // Asegura que el DOM esté listo
+      document.addEventListener('DOMContentLoaded', () => {
+        // Activa Consultorios al arrancar
+        document.querySelector('.tab[data-target="consultorios-view"]').click();
+      });
+    </script>
+  </head>
+  <body>
+    <header class="main-navbar">
+      <h1>Centro Médico de Especialistas de Nariño - CEM - Nariño</h1>
+    </header>
+
+    <!-- Sidebar -->
+    <!-- Menú de pestañas (siempre visible) -->
+    <nav class="tab-bar">
+      <button class="tab active" data-target="consultorios-view">
+        Consultorios
+      </button>
+      <button class="tab" data-target="pacientes-view">Pacientes</button>
+      <button class="tab" data-target="turnos-view">Turnos</button>
+      <button class="tab" data-target="historial-view">Historial</button>
+      <button class="tab" data-target="informante-view">Informante</button>
+    </nav>
+
+    <!-- Overlay para cerrar en móviles/TV -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Contenedor dinámico: cada sección se mostrará/ocultará según el hash -->
+    <main id="main-content">
+      <!-- ====== Consultorios ====== -->
+      <section id="consultorios-view" class="view">
+        <h1>Gestión de Consultorios</h1>
+
+        <!-- Sección FORMULARIO -->
+        <section id="consultorio-form-section">
+          <form id="consultorioForm">
+            <h2 id="formTitle">Nuevo Consultorio</h2>
+
+            <label
+              >Nombre del Médico
+              <input type="text" id="nombre_medico" required />
+            </label>
+
+            <label
+              >Consultorio
+              <input type="text" id="consultorio" required />
+            </label>
+
+            <label
+              >Piso
+              <input type="text" id="piso" required />
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" id="btnGuardar">Guardar</button>
+              <button type="button" id="btnCancelar" style="display: none">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Sección LISTADO -->
+        <section id="consultorio-list-section">
+          <h2>Listado de Consultorios</h2>
+
+          <div class="search-container">
+            <input
+              type="text"
+              id="filterInput"
+              placeholder="Buscar consultorio..." />
+          </div>
+
+          <table id="consultorioTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Médico</th>
+                <th>Consultorio</th>
+                <th>Piso</th>
+                <th>Turno Actual</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div id="noData" style="display: none">
+            No se encontraron resultados.
+          </div>
+        </section>
+      </section>
+
+      <!-- ====== Pacientes ====== -->
+      <section id="pacientes-view" class="view">
+        <h1>Gestión de Pacientes</h1>
+
+        <section id="paciente-form-section">
+          <form id="pacienteForm">
+            <h2 id="pacienteFormTitle">Nuevo Paciente</h2>
+
+            <label
+              >Primer Nombre
+              <input
+                type="text"
+                id="primer_nombre"
+                name="primer_nombre"
+                required
+            /></label>
+            <label
+              >Segundo Nombre
+              <input type="text" id="segundo_nombre" name="segundo_nombre"
+            /></label>
+            <label
+              >Primer Apellido
+              <input
+                type="text"
+                id="primer_apellido"
+                name="primer_apellido"
+                required
+            /></label>
+            <label
+              >Segundo Apellido
+              <input type="text" id="segundo_apellido" name="segundo_apellido"
+            /></label>
+            <label
+              >Cédula
+              <input
+                type="text"
+                id="cedula"
+                name="cedula"
+                pattern="^[0-9]*$"
+                required
+            /></label>
+
+            <label
+              >Tipo de Examen
+              <select id="tipo_examen" name="tipo_examen" required>
+                <option value="">Seleccione...</option>
+                <option>Consulta General</option>
+                <option>Laboratorio</option>
+                <option>Rayos X</option>
+                <option>Especialidad</option>
+                <option>Ecografía</option>
+                <option>Otro</option>
+              </select>
+            </label>
+
+            <label
+              >Empresa <input type="text" id="empresa" name="empresa"
+            /></label>
+            <label
+              >Valor
+              <input type="number" id="valor" name="valor" min="0" required
+            /></label>
+
+            <label
+              >Consultorio
+              <select id="consultorio_id" name="consultorio_id" required>
+                <option value="">Cargando...</option>
+              </select>
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" id="btnPacGuardar">Registrar</button>
+              <button type="button" id="btnPacCancelar" style="display: none">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
+        <section id="paciente-list-section">
+          <h2>Listado de Pacientes</h2>
+
+          <div class="search-container">
+            <input
+              type="text"
+              id="pacienteFilter"
+              placeholder="Buscar paciente..." />
+          </div>
+
+          <table id="pacienteTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Tipo Examen</th>
+                <th>Empresa</th>
+                <th>Valor</th>
+                <th>Consultorio</th>
+                <th>Turno</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div id="noPacienteData" style="display: none">Sin resultados.</div>
+        </section>
+      </section>
+
+      <!-- ====== TURNOS ====== -->
+      <section id="turnos-view" class="view">
+        <h1>Gestión de Turnos</h1>
+
+        <!-- Selector de consultorio -->
+        <section class="selector">
+          <label>
+            Consultorio
+            <select id="turnoConsultorioSelect">
+              <option value="">Seleccione...</option>
+            </select>
+          </label>
+        </section>
+
+        <!-- Panel visible cuando se selecciona un consultorio -->
+        <section id="turnoPanel" class="panel" style="display: none">
+          <!-- Turno actual -->
+          <div class="turno-actual">
+            <h2>Turno Actual</h2>
+            <div class="numero" id="turnoActualNum">0</div>
+            <div class="acciones">
+              <button id="btnSiguiente">Siguiente Turno</button>
+              <button id="btnReiniciar">Volver a Anunciar</button>
+            </div>
+          </div>
+
+          <!-- Pacientes en espera -->
+          <div class="pacientes-espera">
+            <h2>Pacientes en Espera</h2>
+            <table id="tablaEspera">
+              <thead>
+                <tr>
+                  <th>Turno</th>
+                  <th>Nombre</th>
+                  <th>Cédula</th>
+                  <th>Tipo Examen</th>
+                  <th>Hora Entrada</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div id="noEspera" style="display: none">
+              Sin pacientes en espera
+            </div>
+          </div>
+        </section>
+
+        <!-- Mensaje cuando no hay consultorio seleccionado -->
+        <div id="noConsultorio" class="no-consultorio">
+          <p>Por favor, seleccione un consultorio para gestionar los turnos.</p>
+        </div>
+      </section>
+
+      <!-- ====== Historial ====== -->
+      <section id="historial-view" class="view">
+        <h1>Historial de Pacientes</h1>
+
+        <!-- Filtros -->
+        <section class="filter-section">
+          <div class="toggle-group">
+            <button id="btnPendientes" class="toggle active">Pendientes</button>
+            <button id="btnAtendidos" class="toggle">Atendidos</button>
+          </div>
+
+          <div class="date-filters">
+            <label>
+              Desde
+              <input type="date" id="fechaDesde" />
+            </label>
+            <label>
+              Hasta
+              <input type="date" id="fechaHasta" />
+            </label>
+            <button id="btnFiltrarFechas">Filtrar</button>
+            <button id="btnLimpiarFiltros">Limpiar</button>
+          </div>
+
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Buscar en el historial..." />
+          </div>
+        </section>
+
+        <!-- Tabla -->
+        <table id="historialTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Cédula</th>
+              <th>Tipo Examen</th>
+              <th>Empresa</th>
+              <th>Valor</th>
+              <th>Consultorio</th>
+              <th>Turno</th>
+              <th>Estado</th>
+              <th>Hora Entrada</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div id="noResultados" style="display: none">Sin resultados</div>
+      </section>
+
+      <!-- ====== INFORMANTE ====== -->
+      <section id="informante-view" class="view">
+        <header class="informante-header">
+          <h1>Turnos Actuales</h1>
+        </header>
+
+        <!-- Turnos en horizontal -->
+        <div class="turnos-horizontal" id="turnosContainer">
+          <!-- se llenará dinámicamente -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/eventBus.js"></script>
+    <script src="js/webSocketManager.js"></script>
+    <script src="js/consultorioService.js"></script>
+    <script src="js/consultorioForm.js"></script>
+    <script src="js/consultorioList.js"></script>
+
+    <script src="js/pacienteService.js"></script>
+    <script src="js/pacienteForm.js"></script>
+    <script src="js/pacienteList.js"></script>
+
+    <script src="js/turnoService.js"></script>
+    <script src="js/turnosPage.js"></script>
+
+    <script src="js/historialPage.js"></script>
+    <script src="js/informantePage.js"></script>
+
+    <script src="js/router.js"></script>
+
+    <script>
+      function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+      }
+    </script>
+  </body>
+</html>

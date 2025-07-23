@@ -1,0 +1,590 @@
+/* ===== ROOT TOKENS ===== */
+.view {
+  display: none;
+}
+.view.active {
+  display: block;
+}
+
+:root {
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --border: #e5e7eb;
+  --input: #f9fafb;
+  --ring: #3b82f6;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --destructive: #ef4444;
+  --radius: 0.5rem;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ===== RESET ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.5;
+}
+
+/* ===== NAVBAR ===== */
+.main-navbar {
+  background: var(--primary);
+  color: white; /* Texto blanco en el header */
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: 0.025em;
+}
+
+.main-navbar h1 {
+  margin: 0;
+  color: white; /* Asegurar que el h1 sea blanco */
+}
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.875rem 0;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.tab:hover {
+  background: var(--input);
+  color: var(--foreground);
+}
+.tab.active {
+  color: var(--primary);
+  background: var(--background);
+  border-bottom: 2px solid var(--primary);
+}
+
+/* Iconos para las pestañas usando Material Icons */
+.tab[data-target='consultorios-view']::before {
+  content: 'local_hospital';
+  font-family: 'Material Icons';
+}
+.tab[data-target='pacientes-view']::before {
+  content: 'person';
+  font-family: 'Material Icons';
+}
+.tab[data-target='turnos-view']::before {
+  content: 'schedule';
+  font-family: 'Material Icons';
+}
+.tab[data-target='historial-view']::before {
+  content: 'history';
+  font-family: 'Material Icons';
+}
+.tab[data-target='informante-view']::before {
+  content: 'tv';
+  font-family: 'Material Icons';
+}
+
+/* ===== SECTION HEADINGS ===== */
+h1 {
+  margin: 1.5rem 1.25rem 1rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+/* ===== CARD WRAPPER ===== */
+section.view {
+  margin: 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== FORM ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input);
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+/* ===== BUTTONS ===== */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Botones de Guardar/Registrar - Verde */
+#btnGuardar,
+#btnPacGuardar,
+button[type='submit'] {
+  background: #22c55e;
+  color: white;
+  margin: 1rem 0;
+}
+
+/* Botones de Cancelar - Gris */
+#btnCancelar,
+#btnPacCancelar {
+  background: #6b7280;
+  color: white;
+}
+
+/* Botones de Filtrar - Azul */
+#btnFiltrarFechas {
+  background: var(--primary);
+  color: white;
+  margin: 1rem 0;
+}
+
+/* Botones de Limpiar - Naranja */
+#btnLimpiarFiltros {
+  background: #f97316;
+  color: white;
+}
+
+/* Botones de toggle en historial */
+#btnPendientes.active {
+  background: #f97316;
+  color: white;
+}
+
+#btnAtendidos.active {
+  background: #22c55e;
+  color: white;
+}
+
+button.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+button.secondary {
+  background: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+button.destructive {
+  background: var(--destructive);
+  color: #fff;
+}
+
+/* ===== TABLES ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+thead {
+  background: var(--input);
+}
+
+th,
+td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+tbody tr:hover {
+  background: var(--input);
+}
+
+/* Botones en tablas */
+table button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  margin: 0 0.25rem;
+}
+
+/* Botones de editar - Azul */
+table button[onclick*='edit'],
+table button[onclick*='Edit'] {
+  background: var(--primary);
+  color: white;
+}
+
+/* Botones de ocultar - Naranja */
+table button[onclick*='hide'],
+table button[onclick*='Hide'] {
+  background: #f97316;
+  color: white;
+}
+
+/* ===== CHIPS ===== */
+.chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.chip.atendido {
+  background: #22c55e;
+  color: #fff;
+}
+
+.chip.pendiente {
+  background: #f97316;
+  color: #fff;
+}
+
+.chip.en-atencion {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* ===== UTILITIES ===== */
+.search-container input {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.no-consultorio,
+.no-resultados {
+  text-align: center;
+  color: var(--muted);
+  margin-top: 2rem;
+  font-size: 1.125rem;
+}
+
+/* ===== NOTIFICACIONES ===== */
+.patient-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  max-width: 350px;
+}
+
+.patient-notification::before {
+  content: 'person_add';
+  font-family: 'Material Icons';
+  font-size: 1.5rem;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== RESPONSIVE (TV) ===== */
+
+.turno-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* turno actual centrado */
+.turno-actual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border: 2px solid var(--primary);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.turno-actual h2 {
+  margin-bottom: 1rem;
+  color: var(--primary);
+  font-size: 1.5rem;
+}
+
+/* Número del turno más grande y destacado */
+.turno-actual .numero {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-shadow: 2px 2px 4px rgba(59, 130, 246, 0.2);
+  margin: 1rem 0;
+  padding: 1rem 2rem;
+  background: white;
+  border-radius: 1rem;
+  border: 3px solid var(--primary);
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+/* Contenedor de acciones con botones mejorados */
+.turno-actual .acciones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.turno-actual .acciones button {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Botón Siguiente Turno - Verde */
+#btnSiguiente {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+#btnSiguiente:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+#btnSiguiente::before {
+  content: 'skip_next';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Botón Volver a Anunciar - Azul */
+#btnReiniciar {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+#btnReiniciar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+#btnReiniciar::before {
+  content: 'replay';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+.toggle-group .toggle:nth-child(1).active {
+  background: #fcd34d; /* naranja pastel */
+  color: #92400e;
+}
+
+.toggle-group .toggle:nth-child(2).active {
+  background: #a7f3d0; /* verde pastel */
+  color: #047857;
+}
+
+/* Sección de pacientes en espera */
+.pacientes-espera {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+/* Selector de consultorio mejorado */
+.selector {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selector label {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Panel de turnos */
+.panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* chip “En Atención” cuando turno == actual */
+.chip.atencion {
+  background: #93c5fd; /* azul pastel */
+  color: #1e40af;
+}
+
+.informante-view .paciente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.informante-view .paciente-nombre {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.informante-view .paciente-detalle {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.turno-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 280px;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.turno-card.highlight {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+.turno-card h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+.turno-numero {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.paciente-nombre {
+  font-weight: 600;
+}
+.paciente-detalle {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.turnos-horizontal {
+  display: flex;
+  flex-direction: row; /* siempre horizontal */
+  gap: 20px;
+  overflow-x: auto;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.date-filters {
+  margin: 1rem 0;
+}
+
+.search-box {
+  margin: 2rem 0;
+}
