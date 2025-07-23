@@ -141,11 +141,17 @@
    * Maneja mensaje de cambio de turno
    */
   function handleTurnChangeMessage(consultorioId, msg) {
-    // Actualizar datos y reproducir audio si es necesario
+    console.log(`🔄 Cambio de turno en consultorio ${consultorioId}:`, msg);
+
+    // Actualizar datos inmediatamente
     loadTurnos();
 
+    // Si se solicita reproducir audio, hacerlo con un pequeño delay
     if (msg.playAudio && activeTab === 'informante-view') {
-      setTimeout(() => playAudio(consultorioId), 200);
+      setTimeout(() => {
+        console.log(`🔊 Reproduciendo audio para consultorio ${consultorioId}`);
+        playAudio(consultorioId);
+      }, 500); // Delay más largo para asegurar que los datos se carguen primero
     }
   }
 
@@ -203,6 +209,10 @@
 
     // Resetear estado de reproducción de audio para evitar reproducciones automáticas
     audioPlaying = {};
+
+    // IMPORTANTE: Resetear turnosAnterior para evitar reproducciones automáticas
+    // al re-entrar a la pestaña
+    turnosAnterior = {};
 
     // Conectar a las salas de WebSocket
     connectToConsultorioRooms();
@@ -327,6 +337,10 @@
     // Solo actualizar el estado anterior sin disparar audio
     const isFirstLoad = Object.keys(turnosAnterior).length === 0;
 
+    if (isFirstLoad) {
+      console.log('👋 Primera carga de informantePage - sin audio automático');
+    }
+
     for (const t of turnos) {
       if (!t.consultorio) continue;
 
@@ -350,9 +364,16 @@
         if (match) {
           const consultorioId = parseInt(match[0], 10);
 
+          console.log(
+            `🔄 Cambio detectado en ${consultorioKey}: ${previousLabel} → ${currentLabel}`
+          );
+
           // Pequeño delay para evitar múltiples reproducciones
           setTimeout(() => {
             if (activeTab === 'informante-view') {
+              console.log(
+                `🔊 Reproduciendo audio por cambio en consultorio ${consultorioId}`
+              );
               playAudio(consultorioId);
             }
           }, 300);
@@ -409,11 +430,25 @@
    * Reproduce audio para un consultorio específico
    */
   async function playAudio(consultorioId) {
+    console.log(
+      `🎵 Intentando reproducir audio para consultorio ${consultorioId}`
+    );
+
     // Verificaciones múltiples para evitar reproducciones no deseadas
-    if (!isPageActive || activeTab !== 'informante-view') return;
-    if (audioPlaying[consultorioId]) return; // Evitar múltiples reproducciones del mismo consultorio
+    if (!isPageActive || activeTab !== 'informante-view') {
+      console.log(`❌ Audio cancelado - página no activa o pestaña incorrecta`);
+      return;
+    }
+
+    if (audioPlaying[consultorioId]) {
+      console.log(
+        `❌ Audio cancelado - ya reproduciendo para consultorio ${consultorioId}`
+      );
+      return; // Evitar múltiples reproducciones del mismo consultorio
+    }
 
     audioPlaying[consultorioId] = true;
+    console.log(`🔒 Audio bloqueado para consultorio ${consultorioId}`);
 
     try {
       const response = await fetch(
@@ -429,6 +464,7 @@
       // Verificar nuevamente que sigue en la pestaña correcta
       if (!isPageActive || activeTab !== 'informante-view') {
         audioPlaying[consultorioId] = false;
+        console.log(`❌ Audio cancelado después de fetch - pestaña cambió`);
         return;
       }
 
@@ -453,7 +489,7 @@
               );
             })
             .catch((e) => {
-              console.error('Error reproduciendo audio:', e);
+              console.error('❌ Error reproduciendo audio:', e);
               audioPlaying[consultorioId] = false;
             });
 
@@ -471,23 +507,29 @@
               // Liberar el bloqueo cuando termine todas las reproducciones
               setTimeout(() => {
                 audioPlaying[consultorioId] = false;
+                console.log(
+                  `🔓 Audio desbloqueado para consultorio ${consultorioId}`
+                );
               }, 2000);
             }
           };
 
           audio.onerror = () => {
-            console.error('Error en reproducción de audio');
+            console.error('❌ Error en reproducción de audio');
             URL.revokeObjectURL(audio.src);
             audioPlaying[consultorioId] = false;
           };
         } else {
           audioPlaying[consultorioId] = false;
+          console.log(
+            `🔓 Audio desbloqueado (condiciones no cumplidas) para consultorio ${consultorioId}`
+          );
         }
       };
 
       playNext();
     } catch (e) {
-      console.error('Error al reproducir audio:', e);
+      console.error('❌ Error al reproducir audio:', e);
       audioPlaying[consultorioId] = false;
     }
   }

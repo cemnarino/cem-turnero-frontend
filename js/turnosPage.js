@@ -697,7 +697,17 @@
       playAudio: true,
     };
 
-    window.wsManager.send(roomName, message);
+    console.log(
+      `📡 Enviando notificación de cambio de turno a sala ${roomName}:`,
+      message
+    );
+    const sent = window.wsManager.send(roomName, message);
+
+    if (sent) {
+      console.log(`✅ Mensaje enviado exitosamente a sala ${roomName}`);
+    } else {
+      console.error(`❌ Error enviando mensaje a sala ${roomName}`);
+    }
   }
 
   /**
