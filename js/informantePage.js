@@ -7,8 +7,8 @@
   let pollingInterval = null; // Referencia al intervalo de polling
   let isPageActive = true; // Flag para controlar si la página está activa
 
-  // Configuración de salas de consultorios disponibles
-  const consultorioRooms = ['consultorio_1', 'consultorio_2', 'consultorio_3'];
+  // Configuración de salas de consultorios disponibles (nombres que coinciden con el backend)
+  const consultorioRooms = ['1', '2', '3'];
 
   /**
    * Conecta a todas las salas de consultorios usando el WebSocketManager
@@ -63,6 +63,9 @@
         handleTurnChangeMessage(consultorioId, msg);
       } else if (msg.action === 'new_patient') {
         handleNewPatientMessage(consultorioId, msg);
+      } else if (msg.action === 'audio_ready') {
+        // El audio está listo, reproducirlo
+        handleReplayMessage(consultorioId);
       }
     } catch (error) {
       console.error('Error procesando mensaje WebSocket:', error);
@@ -103,8 +106,18 @@
    * Extrae el ID del consultorio del nombre de la sala
    */
   function extractConsultorioId(roomName) {
-    const match = roomName.match(/consultorio_(\d+)/);
-    return match ? parseInt(match[1], 10) : null;
+    // Como ahora usamos directamente el ID como nombre de sala
+    return parseInt(roomName, 10) || null;
+  }
+
+  /**
+   * Desconecta de todas las salas de WebSocket
+   */
+  function disconnectFromRooms() {
+    consultorioRooms.forEach((roomName) => {
+      window.wsManager.disconnect(roomName);
+    });
+    window.wsManager.disconnect('notifications');
   }
 
   /**
@@ -179,6 +192,9 @@
   function activateInformantePage() {
     isPageActive = true;
 
+    // Resetear estado de reproducción de audio para evitar reproducciones automáticas
+    audioPlaying = {};
+
     // Conectar a las salas de WebSocket
     connectToConsultorioRooms();
 
@@ -190,14 +206,13 @@
 
     console.log('✅ Página de informante activada');
   }
-
   /**
    * Desactiva la página de informante
    */
   function deactivateInformantePage() {
     isPageActive = false;
 
-    // Desconectar WebSockets
+    // Desconectar WebSockets para liberar memoria
     disconnectFromRooms();
 
     // Detener polling
@@ -208,7 +223,6 @@
 
     console.log('❌ Página de informante desactivada');
   }
-
   /**
    * Inicia el polling de respaldo (solo como fallback)
    */
@@ -300,6 +314,10 @@
   function detectChanges(turnos) {
     if (!Array.isArray(turnos)) return;
 
+    // Si acabamos de activar la página, no reproducir audio automáticamente
+    // Solo actualizar el estado anterior sin disparar audio
+    const isFirstLoad = Object.keys(turnosAnterior).length === 0;
+
     for (const t of turnos) {
       if (!t.consultorio) continue;
 
@@ -307,8 +325,13 @@
       const currentLabel = t.label;
       const previousLabel = turnosAnterior[consultorioKey];
 
-      // Si el turno cambió y no es 0, reproducir audio
+      // Solo reproducir audio si:
+      // 1. No es la primera carga de la página
+      // 2. El turno cambió
+      // 3. El turno actual no es 0
+      // 4. Estamos en la pestaña correcta
       if (
+        !isFirstLoad &&
         previousLabel &&
         previousLabel !== currentLabel &&
         t.current_turn > 0 &&
@@ -506,7 +529,7 @@
 
   // Función pública para enviar mensajes de replay desde otros módulos
   window.sendReplayMessage = function (consultorioId) {
-    const roomName = `consultorio_${consultorioId}`;
+    const roomName = String(consultorioId); // Usar ID directo como string
     return window.wsManager.send(roomName, 'replay');
   };
 

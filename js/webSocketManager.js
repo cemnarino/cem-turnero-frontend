@@ -13,10 +13,10 @@ class WebSocketManager {
 
     // Configuración de salas
     this.roomConfig = {
-      // Salas de consultorios (3 salas principales)
-      consultorio_1: { type: 'consultorio', id: 1 },
-      consultorio_2: { type: 'consultorio', id: 2 },
-      consultorio_3: { type: 'consultorio', id: 3 },
+      // Salas de consultorios (mapear IDs directamente como en el backend)
+      1: { type: 'consultorio', id: 1 },
+      2: { type: 'consultorio', id: 2 },
+      3: { type: 'consultorio', id: 3 },
 
       // Sala de notificaciones generales
       notifications: { type: 'notifications' },
@@ -25,7 +25,7 @@ class WebSocketManager {
 
   /**
    * Conecta a una sala específica
-   * @param {string} roomName - Nombre de la sala (consultorio_1, consultorio_2, consultorio_3, notifications)
+   * @param {string} roomName - Nombre de la sala ('1', '2', '3', 'notifications')
    * @param {function} onMessage - Callback para manejar mensajes
    * @param {function} onError - Callback opcional para manejar errores
    */

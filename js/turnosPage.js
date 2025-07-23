@@ -80,27 +80,25 @@
     // Desconectar de sala anterior si existe
     disconnectFromCurrentRoom();
 
-    // Determinar la sala según el ID del consultorio (1, 2, o 3)
-    let roomName;
+    // Usar el ID directamente como nombre de sala (coincide con backend)
+    const roomName = String(consultorioId);
+
     if (consultorioId >= 1 && consultorioId <= 3) {
-      roomName = `consultorio_${consultorioId}`;
+      // Conectar usando el WebSocketManager
+      window.wsManager.connect(
+        roomName,
+        handleConsultorioMessage,
+        handleWebSocketError
+      );
+
+      console.log(
+        `Conectado a sala ${roomName} para consultorio ${consultorioId}`
+      );
     } else {
       console.warn(
         `Consultorio ID ${consultorioId} no está en el rango de salas configuradas (1-3)`
       );
-      return;
     }
-
-    // Conectar usando el WebSocketManager
-    window.wsManager.connect(
-      roomName,
-      handleConsultorioMessage,
-      handleWebSocketError
-    );
-
-    console.log(
-      `Conectado a sala ${roomName} para consultorio ${consultorioId}`
-    );
   }
 
   /**
@@ -119,7 +117,7 @@
    */
   function disconnectFromCurrentRoom() {
     if (selectedConsultorioId) {
-      const roomName = `consultorio_${selectedConsultorioId}`;
+      const roomName = String(selectedConsultorioId);
       window.wsManager.disconnect(roomName);
     }
   }
@@ -151,11 +149,14 @@
 
       // Procesar según el tipo de mensaje
       if (msg.action === 'new_patient') {
-        handleNewPatientMessage(msg.paciente || {});
+        handleNewPatientMessage(msg.patient || {});
       } else if (msg.action === 'turn_changed') {
         handleTurnChangeMessage();
       } else if (msg.action === 'patient_update') {
         handlePatientUpdateMessage();
+      } else if (msg.action === 'audio_ready') {
+        // Audio listo para reproducir, no necesitamos hacer nada aquí
+        console.log('Audio listo para consultorio:', msg.consultorio_id);
       }
     } catch (error) {
       console.error('Error procesando mensaje del consultorio:', error);
@@ -449,7 +450,7 @@
     if (!id) return;
 
     // Enviar mensaje de replay usando el WebSocketManager
-    const roomName = `consultorio_${id}`;
+    const roomName = String(id);
     const sent = window.wsManager.send(roomName, 'replay');
 
     if (sent) {
@@ -463,7 +464,7 @@
    * Función para notificar cambio de turno
    */
   function notifyTurnChange(consultorioId) {
-    const roomName = `consultorio_${consultorioId}`;
+    const roomName = String(consultorioId);
     const message = {
       action: 'turn_changed',
       consultorio_id: consultorioId,
