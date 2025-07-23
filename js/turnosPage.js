@@ -352,7 +352,7 @@
 
     const icon = document.createElement('div');
     icon.className = 'notification-icon';
-    icon.textContent = '🔔';
+    icon.textContent = '✅';
 
     const textDiv = document.createElement('div');
     textDiv.className = 'notification-text';
@@ -369,7 +369,7 @@
     const closeBtn = document.createElement('button');
     closeBtn.className = 'notification-close';
     closeBtn.textContent = '×';
-    closeBtn.onclick = () => notification.remove();
+    closeBtn.onclick = () => removeNotification(notification);
 
     // Ensamblar la notificación
     textDiv.appendChild(title);
@@ -393,49 +393,134 @@
           position: fixed;
           top: 20px;
           right: 20px;
-          background: #fff;
-          border: 2px solid #3b82f6;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+          border: 2px solid #28a745;
+          border-radius: 12px;
+          box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1);
           z-index: 10000;
-          animation: slideIn 0.3s ease-out;
-          max-width: 300px;
+          animation: slideInBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          max-width: 350px;
+          min-width: 280px;
+          overflow: hidden;
         }
+        
+        .patient-notification::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #28a745, #20c997, #28a745);
+          background-size: 200% 100%;
+          animation: shimmer 2s ease-in-out infinite;
+        }
+        
         .notification-content {
           display: flex;
-          align-items: center;
-          padding: 12px;
+          align-items: flex-start;
+          padding: 16px;
           gap: 12px;
+          position: relative;
         }
+        
         .notification-icon {
-          font-size: 24px;
-          color: #3b82f6;
-        }
-        .notification-text {
-          flex: 1;
-          font-size: 14px;
-          line-height: 1.4;
-        }
-        .notification-close {
-          background: none;
-          border: none;
-          font-size: 18px;
-          cursor: pointer;
-          color: #666;
-          padding: 0;
-          width: 20px;
-          height: 20px;
+          font-size: 28px;
+          background: #28a745;
+          color: white;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
         }
+        
+        .notification-text {
+          flex: 1;
+          color: #1e4620;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .notification-text strong {
+          display: block;
+          font-size: 16px;
+          font-weight: 600;
+          color: #155724;
+          margin-bottom: 4px;
+        }
+        
+        .notification-text div {
+          font-size: 14px;
+          color: #1e4620;
+          margin: 2px 0;
+        }
+        
+        .notification-text small {
+          font-size: 12px;
+          color: #6c757d;
+          font-style: italic;
+        }
+        
+        .notification-close {
+          background: rgba(255, 255, 255, 0.8);
+          border: none;
+          font-size: 16px;
+          cursor: pointer;
+          color: #6c757d;
+          padding: 0;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        
         .notification-close:hover {
-          background: #f0f0f0;
+          background: #fff;
+          color: #dc3545;
+          transform: scale(1.1);
         }
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+        
+        @keyframes slideInBounce {
+          0% { 
+            transform: translateX(100%) scale(0.8); 
+            opacity: 0; 
+          }
+          50% { 
+            transform: translateX(-10px) scale(1.05); 
+            opacity: 0.8; 
+          }
+          100% { 
+            transform: translateX(0) scale(1); 
+            opacity: 1; 
+          }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        
+        /* Animación de salida */
+        .patient-notification.removing {
+          animation: slideOut 0.3s ease-in-out forwards;
+        }
+        
+        @keyframes slideOut {
+          from { 
+            transform: translateX(0) scale(1); 
+            opacity: 1; 
+          }
+          to { 
+            transform: translateX(100%) scale(0.8); 
+            opacity: 0; 
+          }
         }
       `;
       document.head.appendChild(styles);
@@ -444,12 +529,22 @@
     // Agregar al DOM
     document.body.appendChild(notification);
 
-    // Auto-remover después de 5 segundos
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
+    // Función para remover con animación
+    function removeNotification(notificationElement) {
+      if (notificationElement.parentElement) {
+        notificationElement.classList.add('removing');
+        setTimeout(() => {
+          if (notificationElement.parentElement) {
+            notificationElement.remove();
+          }
+        }, 300); // Duración de la animación de salida
       }
-    }, 5000);
+    }
+
+    // Auto-remover después de 6 segundos
+    setTimeout(() => {
+      removeNotification(notification);
+    }, 6000);
   }
 
   /**
