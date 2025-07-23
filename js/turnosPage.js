@@ -152,7 +152,14 @@
       // Procesar según el tipo de mensaje
       if (msg.action === 'new_patient') {
         console.log('🆕 Nuevo paciente detectado desde sala del consultorio');
-        handleNewPatientMessage(msg.patient || {});
+        // Solo procesar si la sala coincide con el consultorio seleccionado
+        if (parseInt(roomName, 10) === selectedConsultorioId) {
+          handleNewPatientMessage(msg.patient || {});
+        } else {
+          console.log(
+            `⚠️ Mensaje de sala ${roomName} pero consultorio seleccionado es ${selectedConsultorioId} - IGNORANDO`
+          );
+        }
       } else if (msg.action === 'turn_changed') {
         handleTurnChangeMessage();
       } else if (msg.action === 'patient_update') {
@@ -180,13 +187,31 @@
       if (msg.action === 'new_patient' && selectedConsultorioId) {
         const patient = msg.patient;
 
+        // Extraer consultorio del turno_label para comparación correcta
+        let consultorioIdPaciente = patient?.consultorio_id;
+
+        if (!consultorioIdPaciente && patient?.turno_label) {
+          const match = patient.turno_label.match(/Consultorio (\d+)/);
+          if (match) {
+            consultorioIdPaciente = parseInt(match[1], 10);
+          }
+        }
+
+        console.log(
+          `📢 Notification: paciente para consultorio ${consultorioIdPaciente}, seleccionado: ${selectedConsultorioId}`
+        );
+
         // Solo procesar si es para el consultorio seleccionado
-        if (patient && patient.consultorio_id == selectedConsultorioId) {
+        if (patient && consultorioIdPaciente == selectedConsultorioId) {
           console.log(
             `🆕 Nuevo paciente para consultorio ${selectedConsultorioId}:`,
             patient
           );
           handleNewPatientMessage(patient);
+        } else {
+          console.log(
+            `📢 Ignorando notificación - no es para consultorio ${selectedConsultorioId}`
+          );
         }
       } else if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
@@ -227,9 +252,22 @@
       return;
     }
 
-    // SOLUCIÓN TEMPORAL: Si no viene consultorio_id, inferirlo del selectedConsultorioId
-    // ya que el mensaje llegó a través de la sala específica del consultorio
+    // IMPORTANTE: Extraer consultorio_id del turno_label como alternativa
     let consultorioIdPaciente = paciente.consultorio_id;
+
+    if (!consultorioIdPaciente && paciente.turno_label) {
+      // Extraer del formato "Consultorio 3-08" -> consultorio 3
+      const match = paciente.turno_label.match(/Consultorio (\d+)/);
+      if (match) {
+        consultorioIdPaciente = parseInt(match[1], 10);
+        console.log(
+          `🔍 Consultorio extraído del turno_label: ${consultorioIdPaciente}`
+        );
+      }
+    }
+
+    // Si aún no tenemos consultorio_id, usar selectedConsultorioId como último recurso
+    // SOLO si el mensaje llegó por la sala específica del consultorio
     if (!consultorioIdPaciente) {
       console.log(
         '⚠️ consultorio_id no definido, usando selectedConsultorioId como fallback'
@@ -237,8 +275,11 @@
       consultorioIdPaciente = selectedConsultorioId;
     }
 
-    // Solo mostrar notificación si estamos en la pestaña de turnos
-    // y el paciente es para el consultorio seleccionado
+    console.log(
+      `🎯 Comparando: paciente consultorio ${consultorioIdPaciente} vs seleccionado ${selectedConsultorioId}`
+    );
+
+    // Solo mostrar notificación si es para el consultorio seleccionado
     if (consultorioIdPaciente == selectedConsultorioId) {
       console.log('✅ Mostrando notificación de nuevo paciente');
       showNewPatientNotification(paciente);
@@ -247,7 +288,7 @@
       updatePatientsList();
     } else {
       console.log(
-        `⚠️ Paciente para consultorio ${consultorioIdPaciente}, pero seleccionado es ${selectedConsultorioId}`
+        `⚠️ Paciente para consultorio ${consultorioIdPaciente}, pero seleccionado es ${selectedConsultorioId} - IGNORANDO`
       );
     }
   }
@@ -296,23 +337,52 @@
 
     // El backend envía el nombre completo en la propiedad 'nombre'
     const nombrePaciente = paciente.nombre || 'Nuevo paciente';
+    const turnoInfo =
+      paciente.turno_label || `Turno ${paciente.turno}` || '---';
+
+    console.log(`📝 Nombre: "${nombrePaciente}", Turno: "${turnoInfo}"`);
 
     // Crear elemento de notificación
     const notification = document.createElement('div');
     notification.className = 'patient-notification';
-    notification.innerHTML = `
-      <div class="notification-content">
-        <div class="notification-icon">🔔</div>
-        <div class="notification-text">
-          <strong>Nuevo paciente asignado</strong>
-          <br>${nombrePaciente}
-          <br><small>Turno: ${
-            paciente.turno_label || paciente.turno || '---'
-          }</small>
-        </div>
-        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-      </div>
-    `;
+
+    // Crear contenido de forma más explícita
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+
+    const icon = document.createElement('div');
+    icon.className = 'notification-icon';
+    icon.textContent = '🔔';
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'notification-text';
+
+    const title = document.createElement('strong');
+    title.textContent = 'Nuevo paciente asignado';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = nombrePaciente;
+
+    const turnoDiv = document.createElement('small');
+    turnoDiv.textContent = turnoInfo;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'notification-close';
+    closeBtn.textContent = '×';
+    closeBtn.onclick = () => notification.remove();
+
+    // Ensamblar la notificación
+    textDiv.appendChild(title);
+    textDiv.appendChild(document.createElement('br'));
+    textDiv.appendChild(nameDiv);
+    textDiv.appendChild(document.createElement('br'));
+    textDiv.appendChild(turnoDiv);
+
+    content.appendChild(icon);
+    content.appendChild(textDiv);
+    content.appendChild(closeBtn);
+
+    notification.appendChild(content);
 
     // Agregar estilos si no existen
     if (!document.getElementById('notification-styles')) {

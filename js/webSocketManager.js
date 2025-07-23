@@ -8,7 +8,7 @@ class WebSocketManager {
     this.reconnectAttempts = new Map(); // Contador de intentos de reconexión
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000; // 3 segundos
-    this.baseUrl = 'ws://192.168.1.12:8000/ws';
+    this.baseUrl = 'ws://192.168.1.5:8000/ws';
     this.isActive = true; // Flag para controlar si el manager está activo
 
     // Configuración de salas
