@@ -216,15 +216,30 @@
   function handleNewPatientMessage(paciente = {}) {
     console.log('🔔 handleNewPatientMessage llamado con:', paciente);
     console.log('🎯 selectedConsultorioId actual:', selectedConsultorioId);
+    console.log('🔍 consultorio_id del paciente:', paciente.consultorio_id);
+    console.log(
+      '🔍 Todas las propiedades del paciente:',
+      Object.keys(paciente)
+    );
 
     if (!selectedConsultorioId) {
       console.log('⚠️ No hay consultorio seleccionado, ignorando notificación');
       return;
     }
 
+    // SOLUCIÓN TEMPORAL: Si no viene consultorio_id, inferirlo del selectedConsultorioId
+    // ya que el mensaje llegó a través de la sala específica del consultorio
+    let consultorioIdPaciente = paciente.consultorio_id;
+    if (!consultorioIdPaciente) {
+      console.log(
+        '⚠️ consultorio_id no definido, usando selectedConsultorioId como fallback'
+      );
+      consultorioIdPaciente = selectedConsultorioId;
+    }
+
     // Solo mostrar notificación si estamos en la pestaña de turnos
     // y el paciente es para el consultorio seleccionado
-    if (paciente.consultorio_id == selectedConsultorioId) {
+    if (consultorioIdPaciente == selectedConsultorioId) {
       console.log('✅ Mostrando notificación de nuevo paciente');
       showNewPatientNotification(paciente);
       playNotificationSound();
@@ -232,7 +247,7 @@
       updatePatientsList();
     } else {
       console.log(
-        `⚠️ Paciente para consultorio ${paciente.consultorio_id}, pero seleccionado es ${selectedConsultorioId}`
+        `⚠️ Paciente para consultorio ${consultorioIdPaciente}, pero seleccionado es ${selectedConsultorioId}`
       );
     }
   }
@@ -277,10 +292,10 @@
    * Mostrar notificación emergente
    */
   function showNewPatientNotification(paciente = {}) {
-    const nombrePaciente =
-      paciente && Object.keys(paciente).length > 0
-        ? pacienteService.getNombreCompleto(paciente)
-        : 'Nuevo paciente';
+    console.log('📝 Mostrando notificación para paciente:', paciente);
+
+    // El backend envía el nombre completo en la propiedad 'nombre'
+    const nombrePaciente = paciente.nombre || 'Nuevo paciente';
 
     // Crear elemento de notificación
     const notification = document.createElement('div');
@@ -291,6 +306,9 @@
         <div class="notification-text">
           <strong>Nuevo paciente asignado</strong>
           <br>${nombrePaciente}
+          <br><small>Turno: ${
+            paciente.turno_label || paciente.turno || '---'
+          }</small>
         </div>
         <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
       </div>
@@ -368,16 +386,35 @@
    * Reproducir sonido de notificación
    */
   function playNotificationSound() {
+    console.log('🔊 Intentando reproducir sonido de notificación...');
     try {
       const audio = new Audio('assets/notification_sound.mp3');
       audio.volume = 0.7; // Volumen al 70%
+
+      // Agregar listeners para debug
+      audio.addEventListener('loadstart', () =>
+        console.log('🔊 Audio: carga iniciada')
+      );
+      audio.addEventListener('canplay', () =>
+        console.log('🔊 Audio: listo para reproducir')
+      );
+      audio.addEventListener('play', () =>
+        console.log('🔊 Audio: reproducción iniciada')
+      );
+      audio.addEventListener('ended', () =>
+        console.log('🔊 Audio: reproducción terminada')
+      );
+
       audio
         .play()
-        .catch((e) =>
-          console.log('No se pudo reproducir audio de notificación:', e)
-        );
+        .then(() => {
+          console.log('✅ Audio de notificación reproducido exitosamente');
+        })
+        .catch((e) => {
+          console.error('❌ No se pudo reproducir audio de notificación:', e);
+        });
     } catch (e) {
-      console.log('Error cargando audio de notificación:', e);
+      console.error('❌ Error cargando audio de notificación:', e);
     }
   }
 
