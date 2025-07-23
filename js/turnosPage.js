@@ -147,8 +147,11 @@
         }
       }
 
+      console.log(`📨 Mensaje del consultorio ${roomName}:`, msg);
+
       // Procesar según el tipo de mensaje
       if (msg.action === 'new_patient') {
+        console.log('🆕 Nuevo paciente detectado desde sala del consultorio');
         handleNewPatientMessage(msg.patient || {});
       } else if (msg.action === 'turn_changed') {
         handleTurnChangeMessage();
@@ -171,12 +174,18 @@
 
     try {
       const msg = typeof message === 'string' ? JSON.parse(message) : message;
+      console.log('📢 Notificación recibida en Turnos:', msg);
 
-      if (msg.type === 'new_patient' && selectedConsultorioId) {
+      // Corregir: el backend envía 'action', no 'type'
+      if (msg.action === 'new_patient' && selectedConsultorioId) {
         const patient = msg.patient;
 
         // Solo procesar si es para el consultorio seleccionado
         if (patient && patient.consultorio_id == selectedConsultorioId) {
+          console.log(
+            `🆕 Nuevo paciente para consultorio ${selectedConsultorioId}:`,
+            patient
+          );
           handleNewPatientMessage(patient);
         }
       } else if (msg.type === 'system_update') {
@@ -201,16 +210,30 @@
   /**
    * Maneja mensaje de nuevo paciente
    */
+  /**
+   * Maneja el mensaje de nuevo paciente
+   */
   function handleNewPatientMessage(paciente = {}) {
-    if (!selectedConsultorioId) return;
+    console.log('🔔 handleNewPatientMessage llamado con:', paciente);
+    console.log('🎯 selectedConsultorioId actual:', selectedConsultorioId);
+
+    if (!selectedConsultorioId) {
+      console.log('⚠️ No hay consultorio seleccionado, ignorando notificación');
+      return;
+    }
 
     // Solo mostrar notificación si estamos en la pestaña de turnos
     // y el paciente es para el consultorio seleccionado
     if (paciente.consultorio_id == selectedConsultorioId) {
+      console.log('✅ Mostrando notificación de nuevo paciente');
       showNewPatientNotification(paciente);
       playNotificationSound();
       // Actualizar la lista de pacientes
       updatePatientsList();
+    } else {
+      console.log(
+        `⚠️ Paciente para consultorio ${paciente.consultorio_id}, pero seleccionado es ${selectedConsultorioId}`
+      );
     }
   }
 
