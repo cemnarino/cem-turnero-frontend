@@ -281,7 +281,7 @@
 
     try {
       const data = await fetch(
-        `http://192.168.1.5:8000/consultorios/turnos/detallados`
+        `http://192.168.1.12:8000/consultorios/turnos/detallados`
       ).then((r) => {
         if (!r.ok) {
           throw new Error(`HTTP error! status: ${r.status}`);
@@ -417,7 +417,7 @@
 
     try {
       const response = await fetch(
-        `http://192.168.1.5:8000/consultorios/${consultorioId}/audio`
+        `http://192.168.1.12:8000/consultorios/${consultorioId}/audio`
       );
 
       if (!response.ok) {

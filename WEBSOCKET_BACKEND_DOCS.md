@@ -272,10 +272,10 @@ async def create_patient(patient_data: dict):
 
 Para conectar desde el frontend, las URLs serán:
 
-- **Consultorio 1**: `ws://192.168.1.5:8000/ws/1`
-- **Consultorio 2**: `ws://192.168.1.5:8000/ws/2`
-- **Consultorio 3**: `ws://192.168.1.5:8000/ws/3`
-- **Notificaciones**: `ws://192.168.1.5:8000/ws/notifications`
+- **Consultorio 1**: `ws://192.168.1.12:8000/ws/1`
+- **Consultorio 2**: `ws://192.168.1.12:8000/ws/2`
+- **Consultorio 3**: `ws://192.168.1.12:8000/ws/3`
+- **Notificaciones**: `ws://192.168.1.12:8000/ws/notifications`
 
 ## Beneficios de esta Implementación
 
@@ -296,6 +296,6 @@ Para conectar desde el frontend, las URLs serán:
 
 Para probar el sistema, puedes usar herramientas como:
 
-- **wscat**: `wscat -c ws://192.168.1.5:8000/ws/1`
+- **wscat**: `wscat -c ws://192.168.1.12:8000/ws/1`
 - **Browser DevTools**: Conectar desde la consola del navegador
 - **Postman**: Crear pruebas de WebSocket

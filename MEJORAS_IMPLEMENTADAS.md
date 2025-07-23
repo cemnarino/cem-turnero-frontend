@@ -92,10 +92,10 @@
 El backend debe implementar estos endpoints WebSocket:
 
 ```
-ws://192.168.1.5:8000/ws/1          # Consultorio 1
-ws://192.168.1.5:8000/ws/2          # Consultorio 2
-ws://192.168.1.5:8000/ws/3          # Consultorio 3
-ws://192.168.1.5:8000/ws/notifications  # Notificaciones
+ws://192.168.1.12:8000/ws/1          # Consultorio 1
+ws://192.168.1.12:8000/ws/2          # Consultorio 2
+ws://192.168.1.12:8000/ws/3          # Consultorio 3
+ws://192.168.1.12:8000/ws/notifications  # Notificaciones
 ```
 
 ## Tipos de Mensajes WebSocket
