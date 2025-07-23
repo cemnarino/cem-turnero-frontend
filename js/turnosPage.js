@@ -507,7 +507,18 @@
     // Desconectar de todas las salas
     disconnectFromAllRooms();
 
-    console.log('❌ Página de turnos desactivada');
+    // Resetear el select y ocultar panel
+    consultorioSelect.value = '';
+    panel.style.display = 'none';
+    noConsultorio.style.display = 'block';
+
+    // Limpiar variables de estado
+    selectedConsultorioId = null;
+    turnoActual = {};
+
+    console.log(
+      '❌ Página de turnos desactivada - Select reseteado y salas desconectadas'
+    );
   }
 
   // Escuchar eventos de actualización

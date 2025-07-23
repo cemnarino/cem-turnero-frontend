@@ -80,10 +80,15 @@
 
     try {
       const msg = typeof message === 'string' ? JSON.parse(message) : message;
+      console.log('📢 Notificación recibida:', msg);
 
       if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
         loadTurnos();
+      } else if (msg.action === 'new_patient') {
+        // Procesar nuevo paciente - el backend envía 'patient' en lugar de 'paciente'
+        console.log('🆕 Nuevo paciente:', msg.patient);
+        loadTurnos(); // Recargar todos los datos
       }
     } catch (error) {
       console.error('Error procesando notificación:', error);
@@ -148,6 +153,10 @@
    * Maneja mensaje de nuevo paciente
    */
   function handleNewPatientMessage(consultorioId, msg) {
+    console.log(
+      `🆕 Nuevo paciente en consultorio ${consultorioId}:`,
+      msg.patient || msg
+    );
     // Actualizar datos cuando llega un nuevo paciente
     loadTurnos();
   }
