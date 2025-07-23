@@ -139,7 +139,10 @@
                 type="text"
                 id="cedula"
                 name="cedula"
-                pattern="^[0-9]*$"
+                pattern="^[0-9]{6,15}$"
+                placeholder="Ingrese solo números (6-15 dígitos)"
+                maxlength="15"
+                minlength="6"
                 required
             /></label>
 
