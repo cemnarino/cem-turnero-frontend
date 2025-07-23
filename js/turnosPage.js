@@ -47,14 +47,14 @@
       selectedConsultorioId = null;
       return;
     }
-    
+
     panel.style.display = 'block';
     noConsultorio.style.display = 'none';
     selectedConsultorioId = consultorioId;
 
     // Conectar a la sala de WebSocket correspondiente
     connectToConsultorioRoom(consultorioId);
-    
+
     // Conectar también a notificaciones si aún no está conectado
     connectToNotifications();
 
@@ -79,27 +79,39 @@
   function connectToConsultorioRoom(consultorioId) {
     // Desconectar de sala anterior si existe
     disconnectFromCurrentRoom();
-    
+
     // Determinar la sala según el ID del consultorio (1, 2, o 3)
     let roomName;
     if (consultorioId >= 1 && consultorioId <= 3) {
       roomName = `consultorio_${consultorioId}`;
     } else {
-      console.warn(`Consultorio ID ${consultorioId} no está en el rango de salas configuradas (1-3)`);
+      console.warn(
+        `Consultorio ID ${consultorioId} no está en el rango de salas configuradas (1-3)`
+      );
       return;
     }
 
     // Conectar usando el WebSocketManager
-    window.wsManager.connect(roomName, handleConsultorioMessage, handleWebSocketError);
-    
-    console.log(`Conectado a sala ${roomName} para consultorio ${consultorioId}`);
+    window.wsManager.connect(
+      roomName,
+      handleConsultorioMessage,
+      handleWebSocketError
+    );
+
+    console.log(
+      `Conectado a sala ${roomName} para consultorio ${consultorioId}`
+    );
   }
 
   /**
    * Conecta a la sala de notificaciones generales
    */
   function connectToNotifications() {
-    window.wsManager.connect('notifications', handleNotificationMessage, handleWebSocketError);
+    window.wsManager.connect(
+      'notifications',
+      handleNotificationMessage,
+      handleWebSocketError
+    );
   }
 
   /**
@@ -158,10 +170,10 @@
 
     try {
       const msg = typeof message === 'string' ? JSON.parse(message) : message;
-      
+
       if (msg.type === 'new_patient' && selectedConsultorioId) {
         const patient = msg.patient;
-        
+
         // Solo procesar si es para el consultorio seleccionado
         if (patient && patient.consultorio_id == selectedConsultorioId) {
           handleNewPatientMessage(patient);
@@ -180,7 +192,7 @@
    */
   function handleWebSocketError(error, roomName) {
     console.error(`Error en WebSocket ${roomName}:`, error);
-    
+
     // Podríamos implementar lógica de retry o fallback aquí
     showToast(`Error de conexión en ${roomName}`, 'error');
   }
@@ -227,7 +239,9 @@
       const t = await turnoService.getCurrentTurn(selectedConsultorioId);
       turnoNum.textContent = t.turn || 0;
 
-      const all = await turnoService.getPacientesEnEspera(selectedConsultorioId);
+      const all = await turnoService.getPacientesEnEspera(
+        selectedConsultorioId
+      );
       const filtered = all.filter((p) => !p.atendido && p.turno !== t.turn);
       renderPacientes(filtered);
     } catch (error) {
@@ -370,7 +384,7 @@
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    
+
     // Estilos básicos para toast
     Object.assign(toast.style, {
       position: 'fixed',
@@ -382,7 +396,7 @@
       color: 'white',
       fontWeight: '500',
       zIndex: '10001',
-      animation: 'fadeInOut 3s ease-in-out'
+      animation: 'fadeInOut 3s ease-in-out',
     });
 
     if (type === 'error') {
@@ -396,34 +410,36 @@
   }
 
   // Event Listeners para botones
-  
+
   /**
    * Botón Siguiente Turno con confirmación
    */
-  document.getElementById('btnSiguiente').addEventListener('click', async () => {
-    const id = consultorioSelect.value;
-    if (!id) return;
+  document
+    .getElementById('btnSiguiente')
+    .addEventListener('click', async () => {
+      const id = consultorioSelect.value;
+      if (!id) return;
 
-    if (confirm('¿Desea pasar al siguiente paciente?')) {
-      try {
-        await turnoService.nextTurn(id);
-        await showConsultorio(id);
+      if (confirm('¿Desea pasar al siguiente paciente?')) {
+        try {
+          await turnoService.nextTurn(id);
+          await showConsultorio(id);
 
-        // Notificar cambio de turno a través de WebSocket
-        notifyTurnChange(id);
+          // Notificar cambio de turno a través de WebSocket
+          notifyTurnChange(id);
 
-        // Actualizar otras vistas que pueden verse afectadas
-        eventBus.emit('refresh-pacientes');
-        eventBus.emit('refresh-historial');
-        eventBus.emit('refresh-informante');
-        
-        showToast('Turno avanzado correctamente');
-      } catch (error) {
-        console.error('Error al avanzar turno:', error);
-        showToast('Error al avanzar turno', 'error');
+          // Actualizar otras vistas que pueden verse afectadas
+          eventBus.emit('refresh-pacientes');
+          eventBus.emit('refresh-historial');
+          eventBus.emit('refresh-informante');
+
+          showToast('Turno avanzado correctamente');
+        } catch (error) {
+          console.error('Error al avanzar turno:', error);
+          showToast('Error al avanzar turno', 'error');
+        }
       }
-    }
-  });
+    });
 
   /**
    * Botón Volver a Anunciar
@@ -431,11 +447,11 @@
   document.getElementById('btnReiniciar').addEventListener('click', () => {
     const id = consultorioSelect.value;
     if (!id) return;
-    
+
     // Enviar mensaje de replay usando el WebSocketManager
     const roomName = `consultorio_${id}`;
     const sent = window.wsManager.send(roomName, 'replay');
-    
+
     if (sent) {
       showToast('Anuncio reenviado');
     } else {
@@ -452,9 +468,9 @@
       action: 'turn_changed',
       consultorio_id: consultorioId,
       timestamp: new Date().toISOString(),
-      playAudio: true
+      playAudio: true,
     };
-    
+
     window.wsManager.send(roomName, message);
   }
 
@@ -471,13 +487,13 @@
    */
   function activateTurnosPage() {
     isPageActive = true;
-    
+
     // Conectar a notificaciones si hay un consultorio seleccionado
     if (selectedConsultorioId) {
       connectToConsultorioRoom(selectedConsultorioId);
     }
     connectToNotifications();
-    
+
     console.log('✅ Página de turnos activada');
   }
 
@@ -486,10 +502,10 @@
    */
   function deactivateTurnosPage() {
     isPageActive = false;
-    
+
     // Desconectar de todas las salas
     disconnectFromAllRooms();
-    
+
     console.log('❌ Página de turnos desactivada');
   }
 
@@ -533,5 +549,4 @@
       }
     }
   });
-
 })();

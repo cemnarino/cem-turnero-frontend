@@ -1,16 +1,19 @@
 # Documentación del WebSocket para el Backend
 
 ## Resumen
+
 Este documento describe cómo debe implementarse el sistema WebSocket en el backend para que funcione correctamente con el frontend mejorado.
 
 ## Arquitectura de Salas WebSocket
 
 ### 1. Salas de Consultorios (3 salas principales)
+
 - **`/ws/1`** - Sala del Consultorio 1
-- **`/ws/2`** - Sala del Consultorio 2  
+- **`/ws/2`** - Sala del Consultorio 2
 - **`/ws/3`** - Sala del Consultorio 3
 
 ### 2. Sala de Notificaciones Generales
+
 - **`/ws/notifications`** - Sala para notificaciones del sistema
 
 ## Tipos de Mensajes
@@ -18,6 +21,7 @@ Este documento describe cómo debe implementarse el sistema WebSocket en el back
 ### Mensajes de Consultorios (`/ws/{consultorio_id}`)
 
 #### 1. Mensaje de Replay (Repetir Anuncio)
+
 ```json
 // Mensaje recibido del cliente:
 "replay"
@@ -31,6 +35,7 @@ Este documento describe cómo debe implementarse el sistema WebSocket en el back
 ```
 
 #### 2. Cambio de Turno
+
 ```json
 // Mensaje enviado por el servidor cuando cambia un turno:
 {
@@ -48,6 +53,7 @@ Este documento describe cómo debe implementarse el sistema WebSocket en el back
 ```
 
 #### 3. Nuevo Paciente Asignado
+
 ```json
 // Mensaje enviado por el servidor cuando se asigna un nuevo paciente:
 {
@@ -68,6 +74,7 @@ Este documento describe cómo debe implementarse el sistema WebSocket en el back
 ### Mensajes de Notificaciones (`/ws/notifications`)
 
 #### 1. Nuevo Paciente en el Sistema
+
 ```json
 {
   "type": "new_patient",
@@ -84,6 +91,7 @@ Este documento describe cómo debe implementarse el sistema WebSocket en el back
 ```
 
 #### 2. Actualización del Sistema
+
 ```json
 {
   "type": "system_update",
@@ -114,19 +122,19 @@ class ConnectionManager:
             "consultorio_3": [],
             "notifications": []
         }
-    
+
     async def connect(self, websocket: WebSocket, room: str):
         await websocket.accept()
         if room in self.active_connections:
             self.active_connections[room].append(websocket)
             print(f"Cliente conectado a sala {room}")
-    
+
     def disconnect(self, websocket: WebSocket, room: str):
         if room in self.active_connections:
             if websocket in self.active_connections[room]:
                 self.active_connections[room].remove(websocket)
                 print(f"Cliente desconectado de sala {room}")
-    
+
     async def send_to_room(self, room: str, message: dict):
         if room in self.active_connections:
             for connection in self.active_connections[room]:
@@ -135,7 +143,7 @@ class ConnectionManager:
                 except:
                     # Remover conexiones rotas
                     self.active_connections[room].remove(connection)
-    
+
     async def send_text_to_room(self, room: str, message: str):
         if room in self.active_connections:
             for connection in self.active_connections[room]:
@@ -151,26 +159,26 @@ manager = ConnectionManager()
 async def websocket_consultorio(websocket: WebSocket, consultorio_id: int):
     room = f"consultorio_{consultorio_id}"
     await manager.connect(websocket, room)
-    
+
     try:
         while True:
             data = await websocket.receive_text()
-            
+
             # Manejar mensaje de replay
             if data == "replay" or (data.startswith("{") and "replay" in data):
                 # Procesar solicitud de replay
                 await handle_replay_request(consultorio_id)
-                
+
                 # Notificar a todos los clientes de esta sala
                 await manager.send_to_room(room, {"action": "replay"})
-            
+
     except WebSocketDisconnect:
         manager.disconnect(websocket, room)
 
 @app.websocket("/ws/notifications")
 async def websocket_notifications(websocket: WebSocket):
     await manager.connect(websocket, "notifications")
-    
+
     try:
         while True:
             # Esta sala principalmente escucha, no procesa mensajes entrantes
@@ -202,7 +210,7 @@ async def notify_turn_change(consultorio_id: int, new_turn: int, patient_data: d
         "timestamp": datetime.utcnow().isoformat(),
         "playAudio": True
     }
-    
+
     await manager.send_to_room(room, message)
     await manager.send_to_room("notifications", {
         "type": "system_update",
@@ -215,7 +223,7 @@ async def notify_new_patient(patient_data: dict):
     Notificar nuevo paciente asignado
     """
     consultorio_id = patient_data.get("consultorio_id")
-    
+
     # Notificar a la sala específica del consultorio
     if consultorio_id:
         room = f"consultorio_{consultorio_id}"
@@ -225,7 +233,7 @@ async def notify_new_patient(patient_data: dict):
             "paciente": patient_data,
             "timestamp": datetime.utcnow().isoformat()
         })
-    
+
     # Notificar a la sala de notificaciones generales
     await manager.send_to_room("notifications", {
         "type": "new_patient",
@@ -240,23 +248,23 @@ async def notify_new_patient(patient_data: dict):
 @app.patch("/consultorios/{consultorio_id}/next")
 async def next_turn(consultorio_id: int):
     # Tu lógica existente para avanzar turno
-    
+
     # ... código para cambiar turno ...
-    
+
     # Notificar via WebSocket
     await notify_turn_change(consultorio_id, new_turn, patient_data)
-    
+
     return {"message": "Turno avanzado"}
 
 @app.post("/pacientes")
 async def create_patient(patient_data: dict):
     # Tu lógica existente para crear paciente
-    
+
     # ... código para crear paciente ...
-    
+
     # Notificar via WebSocket
     await notify_new_patient(patient_data)
-    
+
     return {"message": "Paciente creado"}
 ```
 
@@ -287,6 +295,7 @@ Para conectar desde el frontend, las URLs serán:
 ## Testing
 
 Para probar el sistema, puedes usar herramientas como:
+
 - **wscat**: `wscat -c ws://192.168.1.5:8000/ws/1`
 - **Browser DevTools**: Conectar desde la consola del navegador
 - **Postman**: Crear pruebas de WebSocket

@@ -14,12 +14,20 @@
    * Conecta a todas las salas de consultorios usando el WebSocketManager
    */
   function connectToConsultorioRooms() {
-    consultorioRooms.forEach(roomName => {
-      window.wsManager.connect(roomName, handleWebSocketMessage, handleWebSocketError);
+    consultorioRooms.forEach((roomName) => {
+      window.wsManager.connect(
+        roomName,
+        handleWebSocketMessage,
+        handleWebSocketError
+      );
     });
-    
+
     // También conectar a la sala de notificaciones para información general
-    window.wsManager.connect('notifications', handleNotificationMessage, handleWebSocketError);
+    window.wsManager.connect(
+      'notifications',
+      handleNotificationMessage,
+      handleWebSocketError
+    );
   }
 
   /**
@@ -66,10 +74,10 @@
    */
   function handleNotificationMessage(message, roomName) {
     if (activeTab !== 'informante-view') return;
-    
+
     try {
       const msg = typeof message === 'string' ? JSON.parse(message) : message;
-      
+
       if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
         loadTurnos();
@@ -84,7 +92,7 @@
    */
   function handleWebSocketError(error, roomName) {
     console.error(`Error en sala ${roomName}:`, error);
-    
+
     // En caso de error, usar polling como respaldo temporal
     if (!pollingInterval && activeTab === 'informante-view') {
       startPollingBackup();
@@ -117,7 +125,7 @@
   function handleTurnChangeMessage(consultorioId, msg) {
     // Actualizar datos y reproducir audio si es necesario
     loadTurnos();
-    
+
     if (msg.playAudio && activeTab === 'informante-view') {
       setTimeout(() => playAudio(consultorioId), 200);
     }
@@ -135,7 +143,7 @@
    * Desconecta de todas las salas de WebSocket
    */
   function disconnectFromRooms() {
-    consultorioRooms.forEach(roomName => {
+    consultorioRooms.forEach((roomName) => {
       window.wsManager.disconnect(roomName);
     });
     window.wsManager.disconnect('notifications');
@@ -143,7 +151,7 @@
 
   // Guarda la pestaña activa (actualizada cada vez que se cambia)
   let activeTab = 'consultorios-view'; // valor inicial
-  
+
   /**
    * Inicializa el sistema cuando el DOM está listo
    */
@@ -154,7 +162,7 @@
         const newTab = tab.dataset.target;
         const wasInformanteActive = activeTab === 'informante-view';
         activeTab = newTab;
-        
+
         // Manejar activación/desactivación de la pestaña informante
         if (newTab === 'informante-view' && !wasInformanteActive) {
           activateInformantePage();
@@ -170,16 +178,16 @@
    */
   function activateInformantePage() {
     isPageActive = true;
-    
+
     // Conectar a las salas de WebSocket
     connectToConsultorioRooms();
-    
+
     // Cargar datos iniciales
     loadTurnos();
-    
+
     // Configurar polling de respaldo (menos frecuente)
     startPollingBackup();
-    
+
     console.log('✅ Página de informante activada');
   }
 
@@ -188,16 +196,16 @@
    */
   function deactivateInformantePage() {
     isPageActive = false;
-    
+
     // Desconectar WebSockets
     disconnectFromRooms();
-    
+
     // Detener polling
     stopPolling();
-    
+
     // Detener cualquier audio en reproducción
     stopAllAudio();
-    
+
     console.log('❌ Página de informante desactivada');
   }
 
@@ -207,8 +215,10 @@
   function startPollingBackup() {
     // Solo usar polling si no hay conexiones WebSocket activas
     const wsStats = window.wsManager.getStats();
-    const hasActiveConnections = Object.values(wsStats).some(stat => stat.state === 'CONNECTED');
-    
+    const hasActiveConnections = Object.values(wsStats).some(
+      (stat) => stat.state === 'CONNECTED'
+    );
+
     if (!hasActiveConnections && !pollingInterval) {
       console.log('🔄 Iniciando polling de respaldo...');
       pollingInterval = setInterval(() => {
@@ -261,21 +271,22 @@
 
       // Detectar cambios y reproducir audio si es necesario
       detectChanges(data);
-      
+
       // Renderizar turnos
       renderTurnos(data);
-      
+
       // Si el polling está activo y hay conexiones WebSocket funcionando, detenerlo
       const wsStats = window.wsManager.getStats();
-      const hasActiveConnections = Object.values(wsStats).some(stat => stat.state === 'CONNECTED');
-      
+      const hasActiveConnections = Object.values(wsStats).some(
+        (stat) => stat.state === 'CONNECTED'
+      );
+
       if (hasActiveConnections && pollingInterval) {
         stopPolling();
       }
-      
     } catch (error) {
       console.error('Error cargando turnos:', error);
-      
+
       // En caso de error, asegurar que el polling esté activo
       if (!pollingInterval) {
         startPollingBackup();
@@ -297,15 +308,16 @@
       const previousLabel = turnosAnterior[consultorioKey];
 
       // Si el turno cambió y no es 0, reproducir audio
-      if (previousLabel && 
-          previousLabel !== currentLabel && 
-          t.current_turn > 0 && 
-          activeTab === 'informante-view') {
-        
+      if (
+        previousLabel &&
+        previousLabel !== currentLabel &&
+        t.current_turn > 0 &&
+        activeTab === 'informante-view'
+      ) {
         const match = t.consultorio.match(/\d+$/);
         if (match) {
           const consultorioId = parseInt(match[0], 10);
-          
+
           // Pequeño delay para evitar múltiples reproducciones
           setTimeout(() => {
             if (activeTab === 'informante-view') {
@@ -327,7 +339,7 @@
     if (!container || !Array.isArray(turnos)) return;
 
     container.innerHTML = '';
-    
+
     turnos.forEach((t) => {
       if (!t.consultorio) return;
 
@@ -346,7 +358,9 @@
         ${
           t.paciente
             ? `<div class="paciente-nombre">${t.paciente.nombre_completo}</div>
-               <div class="paciente-detalle">Examen: ${t.paciente.tipo_examen}</div>
+               <div class="paciente-detalle">Examen: ${
+                 t.paciente.tipo_examen
+               }</div>
                ${
                  esAtencion
                    ? '<span class="chip en-atencion">En Atención</span>'
@@ -373,11 +387,11 @@
       const response = await fetch(
         `http://192.168.1.5:8000/consultorios/${consultorioId}/audio`
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const blob = await response.blob();
 
       // Verificar nuevamente que sigue en la pestaña correcta
@@ -389,26 +403,37 @@
       const audio = new Audio();
       let plays = 0;
       const maxPlays = 2;
-      
+
       const playNext = () => {
-        if (plays < maxPlays && isPageActive && activeTab === 'informante-view') {
+        if (
+          plays < maxPlays &&
+          isPageActive &&
+          activeTab === 'informante-view'
+        ) {
           audio.src = URL.createObjectURL(blob);
-          
-          audio.play()
+
+          audio
+            .play()
             .then(() => {
               plays++;
-              console.log(`🔊 Audio reproducido para consultorio ${consultorioId} (${plays}/${maxPlays})`);
+              console.log(
+                `🔊 Audio reproducido para consultorio ${consultorioId} (${plays}/${maxPlays})`
+              );
             })
             .catch((e) => {
               console.error('Error reproduciendo audio:', e);
               audioPlaying[consultorioId] = false;
             });
-            
+
           audio.onended = () => {
             // Liberar URL del blob
             URL.revokeObjectURL(audio.src);
-            
-            if (plays < maxPlays && isPageActive && activeTab === 'informante-view') {
+
+            if (
+              plays < maxPlays &&
+              isPageActive &&
+              activeTab === 'informante-view'
+            ) {
               setTimeout(playNext, 1000);
             } else {
               // Liberar el bloqueo cuando termine todas las reproducciones
@@ -417,7 +442,7 @@
               }, 2000);
             }
           };
-          
+
           audio.onerror = () => {
             console.error('Error en reproducción de audio');
             URL.revokeObjectURL(audio.src);
@@ -427,9 +452,8 @@
           audioPlaying[consultorioId] = false;
         }
       };
-      
+
       playNext();
-      
     } catch (e) {
       console.error('Error al reproducir audio:', e);
       audioPlaying[consultorioId] = false;
@@ -450,7 +474,7 @@
   eventBus.on('tab-changed', (newTab) => {
     const wasInformanteActive = activeTab === 'informante-view';
     activeTab = newTab;
-    
+
     if (newTab === 'informante-view' && !wasInformanteActive) {
       activateInformantePage();
     } else if (wasInformanteActive && newTab !== 'informante-view') {
@@ -481,14 +505,13 @@
   });
 
   // Función pública para enviar mensajes de replay desde otros módulos
-  window.sendReplayMessage = function(consultorioId) {
+  window.sendReplayMessage = function (consultorioId) {
     const roomName = `consultorio_${consultorioId}`;
     return window.wsManager.send(roomName, 'replay');
   };
 
   // Función pública para obtener estadísticas de conexión
-  window.getWebSocketStats = function() {
+  window.getWebSocketStats = function () {
     return window.wsManager.getStats();
   };
-
 })();

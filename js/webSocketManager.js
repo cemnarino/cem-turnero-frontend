@@ -10,16 +10,16 @@ class WebSocketManager {
     this.reconnectDelay = 3000; // 3 segundos
     this.baseUrl = 'ws://192.168.1.5:8000/ws';
     this.isActive = true; // Flag para controlar si el manager está activo
-    
+
     // Configuración de salas
     this.roomConfig = {
       // Salas de consultorios (3 salas principales)
       consultorio_1: { type: 'consultorio', id: 1 },
       consultorio_2: { type: 'consultorio', id: 2 },
       consultorio_3: { type: 'consultorio', id: 3 },
-      
+
       // Sala de notificaciones generales
-      notifications: { type: 'notifications' }
+      notifications: { type: 'notifications' },
     };
   }
 
@@ -42,8 +42,10 @@ class WebSocketManager {
     }
 
     // Si ya existe una conexión activa para esta sala, no crear otra
-    if (this.connections.has(roomName) && 
-        this.connections.get(roomName).readyState === WebSocket.OPEN) {
+    if (
+      this.connections.has(roomName) &&
+      this.connections.get(roomName).readyState === WebSocket.OPEN
+    ) {
       console.log(`Ya existe una conexión activa para ${roomName}`);
       return;
     }
@@ -58,7 +60,7 @@ class WebSocketManager {
 
     try {
       const ws = new WebSocket(wsUrl);
-      
+
       ws.onopen = () => {
         console.log(`✅ Conectado a ${roomName} (${wsUrl})`);
         this.reconnectAttempts.set(roomName, 0);
@@ -77,9 +79,13 @@ class WebSocketManager {
       };
 
       ws.onclose = (event) => {
-        console.log(`❌ Conexión cerrada para ${roomName}:`, event.code, event.reason);
+        console.log(
+          `❌ Conexión cerrada para ${roomName}:`,
+          event.code,
+          event.reason
+        );
         this.connections.delete(roomName);
-        
+
         // Solo reconectar si es un cierre inesperado y el manager está activo
         if (this.isActive && event.code !== 1000) {
           this.scheduleReconnect(roomName, onMessage, onError);
@@ -94,7 +100,6 @@ class WebSocketManager {
       };
 
       this.connections.set(roomName, ws);
-
     } catch (error) {
       console.error(`Error creando WebSocket para ${roomName}:`, error);
       if (onError) {
@@ -108,16 +113,22 @@ class WebSocketManager {
    */
   scheduleReconnect(roomName, onMessage, onError) {
     const attempts = this.reconnectAttempts.get(roomName) || 0;
-    
+
     if (attempts >= this.maxReconnectAttempts) {
-      console.error(`❌ Máximo de intentos de reconexión alcanzado para ${roomName}`);
+      console.error(
+        `❌ Máximo de intentos de reconexión alcanzado para ${roomName}`
+      );
       return;
     }
 
     this.reconnectAttempts.set(roomName, attempts + 1);
-    
+
     const delay = this.reconnectDelay * Math.pow(2, attempts); // Backoff exponencial
-    console.log(`🔄 Reconectando ${roomName} en ${delay}ms (intento ${attempts + 1}/${this.maxReconnectAttempts})`);
+    console.log(
+      `🔄 Reconectando ${roomName} en ${delay}ms (intento ${attempts + 1}/${
+        this.maxReconnectAttempts
+      })`
+    );
 
     const intervalId = setTimeout(() => {
       if (this.isActive) {
@@ -133,14 +144,17 @@ class WebSocketManager {
    */
   send(roomName, message) {
     const ws = this.connections.get(roomName);
-    
+
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.warn(`No se puede enviar mensaje a ${roomName}: conexión no disponible`);
+      console.warn(
+        `No se puede enviar mensaje a ${roomName}: conexión no disponible`
+      );
       return false;
     }
 
     try {
-      const messageToSend = typeof message === 'string' ? message : JSON.stringify(message);
+      const messageToSend =
+        typeof message === 'string' ? message : JSON.stringify(message);
       ws.send(messageToSend);
       return true;
     } catch (error) {
@@ -154,7 +168,7 @@ class WebSocketManager {
    */
   disconnect(roomName) {
     const ws = this.connections.get(roomName);
-    
+
     if (ws) {
       ws.close(1000, 'Desconexión intencional');
       this.connections.delete(roomName);
@@ -169,9 +183,9 @@ class WebSocketManager {
    */
   disconnectAll() {
     console.log('🔌 Desconectando todas las salas WebSocket...');
-    
+
     this.isActive = false;
-    
+
     for (const roomName of this.connections.keys()) {
       this.disconnect(roomName);
     }
@@ -209,13 +223,18 @@ class WebSocketManager {
   getConnectionState(roomName) {
     const ws = this.connections.get(roomName);
     if (!ws) return 'DISCONNECTED';
-    
+
     switch (ws.readyState) {
-      case WebSocket.CONNECTING: return 'CONNECTING';
-      case WebSocket.OPEN: return 'CONNECTED';
-      case WebSocket.CLOSING: return 'CLOSING';
-      case WebSocket.CLOSED: return 'DISCONNECTED';
-      default: return 'UNKNOWN';
+      case WebSocket.CONNECTING:
+        return 'CONNECTING';
+      case WebSocket.OPEN:
+        return 'CONNECTED';
+      case WebSocket.CLOSING:
+        return 'CLOSING';
+      case WebSocket.CLOSED:
+        return 'DISCONNECTED';
+      default:
+        return 'UNKNOWN';
     }
   }
 
@@ -227,7 +246,7 @@ class WebSocketManager {
     for (const [roomName] of this.connections) {
       stats[roomName] = {
         state: this.getConnectionState(roomName),
-        reconnectAttempts: this.reconnectAttempts.get(roomName) || 0
+        reconnectAttempts: this.reconnectAttempts.get(roomName) || 0,
       };
     }
     return stats;
