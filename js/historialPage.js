@@ -71,17 +71,7 @@
         <span>Página ${resultado.page} de ${resultado.pages} - Total: ${
       resultado.total
     } registros</span>
-        <div class="estadisticas">
-          <span class="stat pending">En espera: ${
-            resultado.stats?.total_pendientes || 0
-          }</span>
-          <span class="stat attention">En atención: ${
-            resultado.stats?.total_en_atencion || 0
-          }</span>
-          <span class="stat completed">Atendidos: ${
-            resultado.stats?.total_atendidos || 0
-          }</span>
-        </div>
+        
       </div>
       <div class="controles-pagina">
         <button onclick="cambiarPagina(${resultado.page - 1})" ${

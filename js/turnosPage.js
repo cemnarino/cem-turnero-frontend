@@ -89,6 +89,12 @@
       // Cargar pacientes en espera
       const all = await turnoService.getPacientesEnEspera(consultorioId);
       const filtered = all.filter((p) => !p.atendido && p.turno !== t.turn);
+
+      // Ordenar por hora de entrada: el último en llegar aparece al final
+      filtered.sort(
+        (a, b) => new Date(a.hora_entrada) - new Date(b.hora_entrada)
+      );
+
       renderPacientes(filtered);
     } catch (error) {
       console.error('Error cargando datos del consultorio:', error);
@@ -348,6 +354,12 @@
         selectedConsultorioId
       );
       const filtered = all.filter((p) => !p.atendido && p.turno !== t.turn);
+
+      // Ordenar por hora de entrada: el último en llegar aparece al final
+      filtered.sort(
+        (a, b) => new Date(a.hora_entrada) - new Date(b.hora_entrada)
+      );
+
       renderPacientes(filtered);
     } catch (error) {
       console.error('Error updating patients list:', error);
@@ -359,95 +371,197 @@
    */
   async function mostrarPacienteEnAtencion(consultorioId) {
     try {
-      const pacienteEnAtencion = await turnoService.getPacienteEnAtencion(
+      // Primero obtener el turno actual
+      const turnoInfo = await turnoService.getCurrentTurn(consultorioId);
+      const turnoActual = turnoInfo.turn;
+      console.log(
+        `🎯 Turno actual del consultorio ${consultorioId}: ${turnoActual}`
+      );
+
+      // Buscar PRIMERO el paciente que está en atención (en_atencion = true)
+      let pacienteEnAtencion = await turnoService.getPacienteEnAtencionDirecto(
         consultorioId
       );
 
-      // Buscar o crear el contenedor para información del paciente en atención
-      let infoContainer = document.getElementById('pacienteEnAtencionInfo');
+      if (pacienteEnAtencion) {
+        console.log(
+          `✅ Encontrado paciente con en_atencion=true:`,
+          pacienteEnAtencion
+        );
+        console.log(
+          `   - Nombre: ${pacienteService.getNombreCompleto(
+            pacienteEnAtencion
+          )}`
+        );
+        console.log(`   - Turno: ${pacienteEnAtencion.turno}`);
+        console.log(`   - en_atencion: ${pacienteEnAtencion.en_atencion}`);
+      } else {
+        console.log(`⚠️ No hay paciente con en_atencion=true`);
+
+        // Solo como fallback, buscar por turno actual
+        if (turnoActual > 0) {
+          console.log(
+            `🔍 Buscando como fallback el paciente del turno actual ${turnoActual}`
+          );
+
+          // Obtener todos los pacientes del consultorio para encontrar el del turno actual
+          const todosPacientes = await turnoService.getPacientesConFiltros({
+            consultorio_id: consultorioId,
+            is_visible: true,
+            limit: 100,
+          });
+
+          console.log(
+            `📊 Total pacientes encontrados: ${todosPacientes.length}`
+          );
+          todosPacientes.forEach((p) => {
+            console.log(
+              `   - ${pacienteService.getNombreCompleto(p)} (Turno: ${
+                p.turno
+              }, en_atencion: ${p.en_atencion})`
+            );
+          });
+
+          // Buscar el paciente con el turno actual
+          pacienteEnAtencion = todosPacientes.find(
+            (p) => p.turno === turnoActual
+          );
+
+          if (pacienteEnAtencion) {
+            console.log(
+              `✅ Encontrado paciente por turno ${turnoActual}:`,
+              pacienteEnAtencion
+            );
+          } else {
+            console.log(`❌ No se encontró paciente para turno ${turnoActual}`);
+          }
+        }
+      }
+
+      // Buscar el div del turno actual
+      const numeroDiv = document.querySelector('.turno-actual .numero');
+      if (!numeroDiv) return;
+
+      // Buscar o crear el contenedor para información del paciente
+      let infoContainer = numeroDiv.querySelector('.paciente-info-inline');
       if (!infoContainer) {
         infoContainer = document.createElement('div');
-        infoContainer.id = 'pacienteEnAtencionInfo';
-        infoContainer.className = 'paciente-atencion-info';
-
-        // Insertar después del número del turno
-        const turnoActualDiv = document.querySelector('.turno-actual .numero');
-        if (turnoActualDiv && turnoActualDiv.parentNode) {
-          turnoActualDiv.parentNode.insertBefore(
-            infoContainer,
-            turnoActualDiv.nextSibling
-          );
-        }
+        infoContainer.className = 'paciente-info-inline';
+        numeroDiv.appendChild(infoContainer);
       }
 
       if (pacienteEnAtencion) {
         const nombreCompleto =
           pacienteService.getNombreCompleto(pacienteEnAtencion);
+        console.log(
+          `📺 MOSTRANDO EN UI: ${nombreCompleto} (Turno: ${pacienteEnAtencion.turno})`
+        );
+
         infoContainer.innerHTML = `
-          <div class="paciente-actual">
-            <h3>En Atención:</h3>
-            <div class="paciente-nombre">${nombreCompleto}</div>
-            <div class="paciente-detalles">
-              <span>Cédula: ${pacienteEnAtencion.cedula}</span>
-              <span>Examen: ${pacienteEnAtencion.tipo_examen}</span>
-              <span>Empresa: ${pacienteEnAtencion.empresa || 'N/A'}</span>
-            </div>
+          <div class="paciente-nombre">${nombreCompleto}</div>
+          <div class="paciente-detalles">
+            <span>T${pacienteEnAtencion.turno} - CC: ${
+          pacienteEnAtencion.cedula
+        }</span>
+            <span>${pacienteEnAtencion.tipo_examen}</span>
+            <span>${pacienteEnAtencion.empresa || 'Particular'}</span>
           </div>
         `;
         infoContainer.style.display = 'block';
       } else {
+        console.log(`📺 MOSTRANDO EN UI: Sin paciente en atención`);
         infoContainer.innerHTML = `
-          <div class="sin-paciente">
-            <span>No hay paciente en atención</span>
-          </div>
+          <div class="sin-paciente">Sin paciente en atención</div>
         `;
         infoContainer.style.display = 'block';
       }
 
-      // Agregar estilos si no existen
-      if (!document.getElementById('paciente-atencion-styles')) {
+      // Agregar estilos mejorados si no existen
+      if (!document.getElementById('paciente-turno-styles')) {
         const styles = document.createElement('style');
-        styles.id = 'paciente-atencion-styles';
+        styles.id = 'paciente-turno-styles';
         styles.textContent = `
-          .paciente-atencion-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 2px solid #2196f3;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+          .turno-actual .numero {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 15px !important;
+            position: relative;
           }
           
-          .paciente-actual h3 {
-            margin: 0 0 10px 0;
-            color: #1976d2;
-            font-size: 16px;
-            font-weight: 600;
+          .paciente-info-inline {
+            font-size: 14px !important;
+            font-weight: normal !important;
+            color: #333 !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            padding: 10px 12px !important;
+            border-radius: 8px !important;
+            border: 2px solid #28a745 !important;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15) !important;
+            width: 100% !important;
+            max-width: 300px !important;
+            margin-top: 10px !important;
+            text-shadow: none !important;
           }
           
-          .paciente-nombre {
-            font-size: 18px;
-            font-weight: bold;
-            color: #0d47a1;
-            margin-bottom: 8px;
+          .paciente-info-inline .paciente-nombre {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            color: #0d47a1 !important;
+            margin-bottom: 6px !important;
+            text-align: center !important;
+            text-shadow: none !important;
           }
           
-          .paciente-detalles {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+          .paciente-info-inline .paciente-detalles {
+            display: flex !important;
+            justify-content: space-between !important;
+            gap: 6px !important;
+            flex-wrap: wrap !important;
           }
           
-          .paciente-detalles span {
-            font-size: 14px;
-            color: #1565c0;
+          .paciente-info-inline .paciente-detalles span {
+            font-size: 11px !important;
+            color: #495057 !important;
+            background: #f8f9fa !important;
+            padding: 2px 6px !important;
+            border-radius: 3px !important;
+            border: 1px solid #dee2e6 !important;
+            flex: 1 !important;
+            text-align: center !important;
+            min-width: 0 !important;
+            text-shadow: none !important;
           }
           
-          .sin-paciente {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            padding: 10px;
+          .paciente-info-inline .sin-paciente {
+            text-align: center !important;
+            color: #6c757d !important;
+            font-style: italic !important;
+            padding: 6px !important;
+            background: #f8f9fa !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            text-shadow: none !important;
+          }
+          
+          @media (max-width: 768px) {
+            .paciente-info-inline {
+              max-width: 250px !important;
+              font-size: 12px !important;
+            }
+            
+            .paciente-info-inline .paciente-nombre {
+              font-size: 14px !important;
+            }
+            
+            .paciente-info-inline .paciente-detalles {
+              flex-direction: column !important;
+              gap: 3px !important;
+            }
+            
+            .paciente-info-inline .paciente-detalles span {
+              font-size: 10px !important;
+            }
           }
         `;
         document.head.appendChild(styles);
