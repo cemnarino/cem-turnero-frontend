@@ -17,59 +17,248 @@
 
   init();
 
+  let paginaActual = 1;
+  const itemsPorPagina = 20;
+  let totalPaginas = 1;
+
   async function init() {
     // Cargar consultorios
     const cons = await consultorioService.list();
     cons.filter((c) => c.is_visible).forEach((c) => (consultorios[c.id] = c));
 
-    // Cargar pacientes
-    pacientes = await pacienteService.list();
-    pacientes = pacientes.filter((p) => p.hora_entrada); // solo los que ingresaron
-    renderTabla(pacientes);
+    // Cargar primera página de pacientes con paginación
+    await cargarPacientesPaginados();
     bindEvents();
   }
+
+  async function cargarPacientesPaginados() {
+    try {
+      const resultado = await pacienteService.getPaginado({
+        page: paginaActual,
+        per_page: itemsPorPagina,
+        is_visible: true,
+      });
+
+      pacientes = resultado.items || [];
+      totalPaginas = resultado.pages || 1;
+
+      // Actualizar información de paginación
+      actualizarInfoPaginacion(resultado);
+      filtrar();
+    } catch (error) {
+      console.error('Error cargando pacientes paginados:', error);
+      showToast('Error cargando historial', 'error');
+    }
+  }
+
+  function actualizarInfoPaginacion(resultado) {
+    // Buscar o crear elemento de información de paginación
+    let paginacionInfo = document.getElementById('paginacion-info');
+    if (!paginacionInfo) {
+      paginacionInfo = document.createElement('div');
+      paginacionInfo.id = 'paginacion-info';
+      paginacionInfo.className = 'paginacion-info';
+
+      // Insertar antes de la tabla
+      const tabla = document.getElementById('historialTable');
+      if (tabla && tabla.parentNode) {
+        tabla.parentNode.insertBefore(paginacionInfo, tabla);
+      }
+    }
+
+    paginacionInfo.innerHTML = `
+      <div class="info-pagina">
+        <span>Página ${resultado.page} de ${resultado.pages} - Total: ${
+      resultado.total
+    } registros</span>
+        <div class="estadisticas">
+          <span class="stat pending">En espera: ${
+            resultado.stats?.total_pendientes || 0
+          }</span>
+          <span class="stat attention">En atención: ${
+            resultado.stats?.total_en_atencion || 0
+          }</span>
+          <span class="stat completed">Atendidos: ${
+            resultado.stats?.total_atendidos || 0
+          }</span>
+        </div>
+      </div>
+      <div class="controles-pagina">
+        <button onclick="cambiarPagina(${resultado.page - 1})" ${
+      !resultado.has_prev ? 'disabled' : ''
+    }>
+          <i class="material-icons">chevron_left</i> Anterior
+        </button>
+        <span class="pagina-actual">Página ${resultado.page}</span>
+        <button onclick="cambiarPagina(${resultado.page + 1})" ${
+      !resultado.has_next ? 'disabled' : ''
+    }>
+          Siguiente <i class="material-icons">chevron_right</i>
+        </button>
+      </div>
+    `;
+
+    // Agregar estilos si no existen
+    if (!document.getElementById('paginacion-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'paginacion-styles';
+      styles.textContent = `
+        .paginacion-info {
+          margin-bottom: 20px;
+          padding: 15px;
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 8px;
+        }
+        
+        .info-pagina {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        
+        .estadisticas {
+          display: flex;
+          gap: 15px;
+        }
+        
+        .stat {
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        
+        .stat.pending { background: #fff3cd; color: #856404; }
+        .stat.attention { background: #cce5ff; color: #004085; }
+        .stat.completed { background: #d4edda; color: #155724; }
+        
+        .controles-pagina {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .controles-pagina button {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 8px 16px;
+          border: 1px solid #007bff;
+          background: #007bff;
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .controles-pagina button:hover:not(:disabled) {
+          background: #0056b3;
+        }
+        
+        .controles-pagina button:disabled {
+          background: #6c757d;
+          border-color: #6c757d;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+        
+        .pagina-actual {
+          font-weight: 600;
+          color: #495057;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  }
+
+  // Función global para cambiar página
+  window.cambiarPagina = async (nuevaPagina) => {
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+
+    paginaActual = nuevaPagina;
+    await cargarPacientesPaginados();
+  };
 
   function bindEvents() {
     btnPendientes.addEventListener('click', () => cambiarVista(false));
     btnAtendidos.addEventListener('click', () => cambiarVista(true));
-    btnFiltrar.addEventListener('click', filtrar);
+    btnFiltrar.addEventListener('click', () => {
+      paginaActual = 1; // Resetear a primera página al filtrar
+      cargarPacientesPaginados();
+    });
     btnLimpiar.addEventListener('click', limpiar);
-    searchInput.addEventListener('input', filtrar);
+    searchInput.addEventListener('input', () => {
+      // Debounce la búsqueda
+      clearTimeout(window.searchTimeout);
+      window.searchTimeout = setTimeout(() => {
+        paginaActual = 1;
+        cargarPacientesPaginados();
+      }, 500);
+    });
   }
 
   function cambiarVista(atendidos) {
     mostrarAtendidos = atendidos;
     btnPendientes.classList.toggle('active', !atendidos);
     btnAtendidos.classList.toggle('active', atendidos);
-    filtrar();
+    paginaActual = 1; // Resetear a primera página al cambiar vista
+    cargarPacientesPaginados();
   }
 
   function filtrar() {
-    let lista = mostrarAtendidos
-      ? pacientes.filter((p) => p.atendido)
-      : pacientes.filter((p) => !p.atendido);
+    // Usar la búsqueda avanzada del backend en lugar de filtrar en el frontend
+    buscarConCriterios();
+  }
 
-    // Fechas
-    const desde = fechaDesde.value
-      ? new Date(fechaDesde.value + 'T00:00:00')
-      : null;
-    const hasta = fechaHasta.value
-      ? new Date(fechaHasta.value + 'T23:59:59')
-      : null;
-    if (desde) lista = lista.filter((p) => new Date(p.hora_entrada) >= desde);
-    if (hasta) lista = lista.filter((p) => new Date(p.hora_entrada) <= hasta);
+  async function buscarConCriterios() {
+    try {
+      const criterios = {
+        page: paginaActual,
+        per_page: itemsPorPagina,
+        is_visible: true,
+      };
 
-    // Búsqueda libre
-    const txt = searchInput.value.toLowerCase();
-    if (txt)
-      lista = lista.filter(
-        (p) =>
-          pacienteService.getNombreCompleto(p).toLowerCase().includes(txt) ||
-          p.cedula.toString().includes(txt) ||
-          p.tipo_examen.toLowerCase().includes(txt)
-      );
+      // Filtro por estado de atención
+      if (mostrarAtendidos) {
+        criterios.atendido = true;
+      } else {
+        criterios.atendido = false;
+      }
 
-    renderTabla(lista);
+      // Filtro por texto de búsqueda
+      const textoBusqueda = searchInput.value.trim();
+      if (textoBusqueda) {
+        criterios.texto = textoBusqueda;
+      }
+
+      // Filtros de fecha
+      const fechaDesdeValue = fechaDesde.value;
+      const fechaHastaValue = fechaHasta.value;
+
+      if (fechaDesdeValue) {
+        criterios.fecha_inicio = fechaDesdeValue;
+      }
+
+      if (fechaHastaValue) {
+        criterios.fecha_fin = fechaHastaValue;
+      }
+
+      // Realizar búsqueda
+      const resultado = await pacienteService.buscar(criterios);
+
+      pacientes = resultado.items || [];
+      totalPaginas = resultado.pages || 1;
+
+      // Actualizar información de paginación
+      actualizarInfoPaginacion(resultado);
+      renderTabla(pacientes);
+    } catch (error) {
+      console.error('Error en búsqueda:', error);
+      showToast('Error en la búsqueda', 'error');
+    }
   }
 
   function limpiar() {
@@ -90,31 +279,31 @@
     }
 
     lista.forEach((p) => {
-      const cons = consultorios[p.consultorio_id];
-      const act = turnoActual[p.consultorio_id] || 0;
-      let badgeClass, badgeText;
+      const cons = consultorios[p.consultorio_id] || p.consultorio; // Soporte para datos incluidos del backend
 
-      if (p.turno === act) {
-        badgeClass = 'chip en-atencion'; /* azul pastel */
+      // Usar el nuevo campo en_atencion del backend
+      let badgeClass, badgeText;
+      if (p.en_atencion) {
+        badgeClass = 'chip en-atencion';
         badgeText = 'En Atención';
       } else if (p.atendido) {
-        badgeClass = 'chip atendido'; /* verde pastel */
+        badgeClass = 'chip atendido';
         badgeText = 'Atendido';
       } else {
-        badgeClass = 'chip pendiente'; /* naranja pastel */
-        badgeText = 'Pendiente';
+        badgeClass = 'chip pendiente';
+        badgeText = 'En Espera';
       }
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${pacienteService.getNombreCompleto(p)}</td>
+      <td>${p.nombre_completo || pacienteService.getNombreCompleto(p)}</td>
       <td>${p.cedula}</td>
       <td>${p.tipo_examen}</td>
       <td>${p.empresa || 'N/A'}</td>
       <td>$${p.valor.toLocaleString('es-CO')}</td>
-      <td>${cons ? cons.consultorio : 'N/A'}</td>
-      <td>${p.turno || '—'}</td>
+      <td>${cons?.nombre_medico || cons?.consultorio || 'N/A'}</td>
+      <td>${p.turno_label || p.turno || '—'}</td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
       <td>${new Date(p.hora_entrada).toLocaleString('es-CO')}</td>
     `;
@@ -123,5 +312,8 @@
   }
 
   // Primera carga
-  eventBus.on('refresh-historial', init);
+  eventBus.on('refresh-historial', () => {
+    paginaActual = 1;
+    cargarPacientesPaginados();
+  });
 })();

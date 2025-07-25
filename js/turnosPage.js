@@ -83,6 +83,9 @@
       turnoActual[consultorioId] = t.turn;
       turnoNum.textContent = t.turn || 0;
 
+      // Mostrar información del paciente en atención
+      await mostrarPacienteEnAtencion(consultorioId);
+
       // Cargar pacientes en espera
       const all = await turnoService.getPacientesEnEspera(consultorioId);
       const filtered = all.filter((p) => !p.atendido && p.turno !== t.turn);
@@ -338,6 +341,9 @@
       const t = await turnoService.getCurrentTurn(selectedConsultorioId);
       turnoNum.textContent = t.turn || 0;
 
+      // Actualizar información del paciente en atención
+      await mostrarPacienteEnAtencion(selectedConsultorioId);
+
       const all = await turnoService.getPacientesEnEspera(
         selectedConsultorioId
       );
@@ -345,6 +351,109 @@
       renderPacientes(filtered);
     } catch (error) {
       console.error('Error updating patients list:', error);
+    }
+  }
+
+  /**
+   * Muestra información del paciente actualmente en atención
+   */
+  async function mostrarPacienteEnAtencion(consultorioId) {
+    try {
+      const pacienteEnAtencion = await turnoService.getPacienteEnAtencion(
+        consultorioId
+      );
+
+      // Buscar o crear el contenedor para información del paciente en atención
+      let infoContainer = document.getElementById('pacienteEnAtencionInfo');
+      if (!infoContainer) {
+        infoContainer = document.createElement('div');
+        infoContainer.id = 'pacienteEnAtencionInfo';
+        infoContainer.className = 'paciente-atencion-info';
+
+        // Insertar después del número del turno
+        const turnoActualDiv = document.querySelector('.turno-actual .numero');
+        if (turnoActualDiv && turnoActualDiv.parentNode) {
+          turnoActualDiv.parentNode.insertBefore(
+            infoContainer,
+            turnoActualDiv.nextSibling
+          );
+        }
+      }
+
+      if (pacienteEnAtencion) {
+        const nombreCompleto =
+          pacienteService.getNombreCompleto(pacienteEnAtencion);
+        infoContainer.innerHTML = `
+          <div class="paciente-actual">
+            <h3>En Atención:</h3>
+            <div class="paciente-nombre">${nombreCompleto}</div>
+            <div class="paciente-detalles">
+              <span>Cédula: ${pacienteEnAtencion.cedula}</span>
+              <span>Examen: ${pacienteEnAtencion.tipo_examen}</span>
+              <span>Empresa: ${pacienteEnAtencion.empresa || 'N/A'}</span>
+            </div>
+          </div>
+        `;
+        infoContainer.style.display = 'block';
+      } else {
+        infoContainer.innerHTML = `
+          <div class="sin-paciente">
+            <span>No hay paciente en atención</span>
+          </div>
+        `;
+        infoContainer.style.display = 'block';
+      }
+
+      // Agregar estilos si no existen
+      if (!document.getElementById('paciente-atencion-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'paciente-atencion-styles';
+        styles.textContent = `
+          .paciente-atencion-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+          }
+          
+          .paciente-actual h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+            font-size: 16px;
+            font-weight: 600;
+          }
+          
+          .paciente-nombre {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0d47a1;
+            margin-bottom: 8px;
+          }
+          
+          .paciente-detalles {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .paciente-detalles span {
+            font-size: 14px;
+            color: #1565c0;
+          }
+          
+          .sin-paciente {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 10px;
+          }
+        `;
+        document.head.appendChild(styles);
+      }
+    } catch (error) {
+      console.error('Error obteniendo paciente en atención:', error);
     }
   }
 
@@ -695,64 +804,19 @@
       const id = consultorioSelect.value;
       if (!id) return;
 
-      const roomName = String(id);
-      const message = {
-        action: 'replay',
-        consultorio_id: parseInt(id, 10),
-        timestamp: new Date().toISOString(),
-      };
+      try {
+        // Usar el nuevo endpoint del backend para volver a anunciar
+        const result = await turnoService.volverAnunciar(id);
 
-      console.log(`📡 Enviando replay a sala ${roomName}:`, message);
-
-      // Verificar estado de la conexión primero
-      const wsStats = window.wsManager.getStats();
-      const roomStat = wsStats[roomName];
-
-      if (!roomStat || roomStat.state !== 'CONNECTED') {
-        console.warn(
-          `⚠️ Conexión no disponible para sala ${roomName}. Estado:`,
-          roomStat?.state || 'desconectado'
-        );
-        showToast(
-          'Reconectando... Intente nuevamente en unos segundos',
-          'info'
-        );
-
-        // Intentar reconectar si hay un consultorio seleccionado
-        if (selectedConsultorioId) {
-          connectToConsultorioRoom(selectedConsultorioId);
+        if (result.success) {
+          showToast('Anuncio enviado correctamente');
+          console.log('✅ Volver a anunciar exitoso:', result.message);
+        } else {
+          showToast('Error al enviar anuncio', 'error');
         }
-        return;
-      }
-
-      // Enviar mensaje a la sala específica del consultorio
-      const sent = window.wsManager.send(roomName, message);
-
-      // IMPORTANTE: También enviar a la sala de notificaciones para asegurar que llegue al informante
-      const sentToNotifications = window.wsManager.send('notifications', {
-        ...message,
-        target_room: roomName, // Indicar de qué consultorio viene
-        action: 'replay',
-        consultorio_id: parseInt(id, 10),
-      });
-
-      if (sent || sentToNotifications) {
-        console.log(
-          `✅ Replay enviado exitosamente a sala ${roomName}${
-            sentToNotifications ? ' y notifications' : ''
-          }`
-        );
-        showToast('Anuncio reenviado');
-      } else {
-        console.error(`❌ Error enviando replay a sala ${roomName}`);
-        showToast('Error al enviar anuncio - Verificando conexión...', 'error');
-
-        // Intentar reconectar después de un error
-        setTimeout(() => {
-          if (selectedConsultorioId) {
-            connectToConsultorioRoom(selectedConsultorioId);
-          }
-        }, 1000);
+      } catch (error) {
+        console.error('❌ Error en volver a anunciar:', error);
+        showToast('Error al enviar anuncio', 'error');
       }
     });
 

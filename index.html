@@ -135,16 +135,33 @@
             /></label>
             <label
               >Cédula
-              <input
-                type="text"
-                id="cedula"
-                name="cedula"
-                pattern="^[0-9]{6,15}$"
-                placeholder="Ingrese solo números (6-15 dígitos)"
-                maxlength="15"
-                minlength="6"
-                required
-            /></label>
+              <div class="cedula-input-group">
+                <input
+                  type="text"
+                  id="cedula"
+                  name="cedula"
+                  pattern="^[0-9]{6,15}$"
+                  placeholder="Ingrese solo números (6-15 dígitos)"
+                  maxlength="15"
+                  minlength="6"
+                  required />
+                <button
+                  type="button"
+                  id="btnBuscarCedula"
+                  class="search-btn"
+                  title="Buscar historial">
+                  <i class="material-icons">search</i>
+                </button>
+              </div>
+            </label>
+
+            <!-- Resultados de la búsqueda por cédula -->
+            <div
+              id="resultadosBusquedaCedula"
+              class="busqueda-resultados"
+              style="display: none">
+              <!-- Se llenará dinámicamente -->
+            </div>
 
             <label
               >Tipo de Examen

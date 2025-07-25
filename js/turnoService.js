@@ -88,4 +88,21 @@ window.turnoService = {
       `http://192.168.1.5:8000/pacientes/count?${params.toString()}`
     ).then((r) => r.json());
   },
+
+  // Nuevo: Obtener paciente en atención para un consultorio
+  getPacienteEnAtencion: (consultorioId) =>
+    turnoService
+      .getPacientesConFiltros({
+        consultorio_id: consultorioId,
+        en_atencion: true,
+        is_visible: true,
+        limit: 1,
+      })
+      .then((pacientes) => (pacientes.length > 0 ? pacientes[0] : null)),
+
+  // Nuevo: Volver a anunciar
+  volverAnunciar: (id) =>
+    fetch(`http://192.168.1.5:8000/consultorios/${id}/replay`, {
+      method: 'POST',
+    }).then((r) => r.json()),
 };
