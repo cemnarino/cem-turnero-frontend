@@ -1,4 +1,4 @@
-// js\informantePage.js
+// js/informantePage.js
 
 (() => {
   const container = document.getElementById('turnosContainer');
@@ -7,14 +7,21 @@
   let pollingInterval = null; // Referencia al intervalo de polling
   let isPageActive = true; // Flag para controlar si la página está activa
 
-  // Configuración de salas de consultorios disponibles (nombres que coinciden con el backend)
+  // Salas de WebSocket para cada consultorio (1, 2, 3) más notificaciones
   const consultorioRooms = ['1', '2', '3'];
 
   /**
-   * Conecta a todas las salas de consultorios usando el WebSocketManager
+   * Conecta a las salas de WebSocket de los consultorios
    */
   function connectToConsultorioRooms() {
+    console.log('🔌 Conectando a salas de WebSocket...');
+
+    // Primero desconectar para evitar conexiones duplicadas
+    disconnectFromRooms();
+
+    // Conectar a cada sala de consultorio
     consultorioRooms.forEach((roomName) => {
+      console.log(`🔌 Conectando a sala: ${roomName}`);
       window.wsManager.connect(
         roomName,
         handleWebSocketMessage,
@@ -23,11 +30,14 @@
     });
 
     // También conectar a la sala de notificaciones para información general
+    console.log('🔌 Conectando a sala: notifications');
     window.wsManager.connect(
       'notifications',
       handleNotificationMessage,
       handleWebSocketError
     );
+
+    console.log('✅ Todas las conexiones WebSocket iniciadas');
   }
 
   /**
@@ -56,16 +66,31 @@
       const consultorioId = extractConsultorioId(roomName);
       if (!consultorioId) return;
 
+      console.log(`📨 Mensaje de consultorio ${consultorioId}:`, msg);
+
       // Manejar diferentes tipos de mensajes
       if (msg.action === 'replay') {
-        handleReplayMessage(consultorioId);
+        // Para replay, usar el consultorio_id del mensaje si está disponible
+        const targetConsultorioId = parseInt(
+          msg.consultorio_id || consultorioId,
+          10
+        );
+        console.log(
+          `🔄 Procesando replay para consultorio ${targetConsultorioId}`
+        );
+        handleReplayMessage(targetConsultorioId);
       } else if (msg.action === 'turn_changed') {
         handleTurnChangeMessage(consultorioId, msg);
       } else if (msg.action === 'new_patient') {
         handleNewPatientMessage(consultorioId, msg);
+      } else if (msg.action === 'patient_deleted') {
+        handlePatientDeletedMessage(consultorioId, msg);
       } else if (msg.action === 'audio_ready') {
-        // El audio está listo, reproducirlo
-        handleReplayMessage(consultorioId);
+        // Audio está listo - solo logear, NO reproducir automáticamente
+        console.log(`🎵 Audio listo para consultorio ${consultorioId}`);
+      } else if (msg.type === 'ping') {
+        // Heartbeat del servidor - no hacer nada, solo mantener conexión
+        console.debug('💓 Heartbeat recibido');
       }
     } catch (error) {
       console.error('Error procesando mensaje WebSocket:', error);
@@ -82,13 +107,34 @@
       const msg = typeof message === 'string' ? JSON.parse(message) : message;
       console.log('📢 Notificación recibida:', msg);
 
+      // Manejar diferentes tipos de notificaciones
       if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
         loadTurnos();
       } else if (msg.action === 'new_patient') {
         // Procesar nuevo paciente - el backend envía 'patient' en lugar de 'paciente'
-        console.log('🆕 Nuevo paciente:', msg.patient);
+        console.log('🆕 Nuevo paciente (notificación):', msg.patient);
         loadTurnos(); // Recargar todos los datos
+      } else if (msg.action === 'turn_changed') {
+        // Un turno cambió - actualizar vista
+        console.log('🔄 Cambio de turno (notificación):', msg.paciente);
+        loadTurnos();
+      } else if (msg.action === 'patient_deleted') {
+        // Un paciente fue eliminado
+        console.log('🗑️ Paciente eliminado (notificación):', msg.paciente_id);
+        loadTurnos();
+      } else if (msg.action === 'replay') {
+        // Replay desde turnosPage - reproducir audio inmediatamente
+        const consultorioId = parseInt(msg.consultorio_id, 10);
+        console.log(
+          `🔄 Replay recibido vía notificaciones para consultorio ${consultorioId}`
+        );
+        if (consultorioId >= 1 && consultorioId <= 3) {
+          handleReplayMessage(consultorioId);
+        }
+      } else if (msg.type === 'ping') {
+        // Heartbeat del servidor
+        console.debug('💓 Heartbeat de notificaciones');
       }
     } catch (error) {
       console.error('Error procesando notificación:', error);
@@ -129,10 +175,15 @@
    * Maneja mensaje de replay (repetir anuncio)
    */
   function handleReplayMessage(consultorioId) {
+    console.log(`🔄 Replay solicitado para consultorio ${consultorioId}`);
+
     // Pequeño delay para evitar múltiples reproducciones simultáneas
     setTimeout(() => {
       if (activeTab === 'informante-view') {
+        console.log(`🔊 Ejecutando replay para consultorio ${consultorioId}`);
         playAudio(consultorioId);
+      } else {
+        console.log(`❌ Replay cancelado - no en pestaña informante`);
       }
     }, 100);
   }
@@ -164,6 +215,18 @@
       msg.patient || msg
     );
     // Actualizar datos cuando llega un nuevo paciente
+    loadTurnos();
+  }
+
+  /**
+   * Maneja mensaje de paciente eliminado
+   */
+  function handlePatientDeletedMessage(consultorioId, msg) {
+    console.log(
+      `🗑️ Paciente eliminado en consultorio ${consultorioId}:`,
+      msg.paciente_id
+    );
+    // Actualizar datos cuando se elimina un paciente
     loadTurnos();
   }
 
@@ -396,7 +459,9 @@
     turnos.forEach((t) => {
       if (!t.consultorio) return;
 
-      const esAtencion = t.paciente && t.current_turn > 0;
+      // Usar la nueva columna en_atencion del backend para determinar el estado
+      const esAtencion = t.paciente && t.paciente.en_atencion === true;
+
       // Formatear turno con ceros a la izquierda (01, 02, etc.)
       const turnoFormateado = t.current_turn
         ? String(t.current_turn).padStart(2, '0')
@@ -404,6 +469,9 @@
 
       const card = document.createElement('div');
       card.className = 'turno-card' + (esAtencion ? ' highlight' : '');
+
+      // Mostrar información más detallada con el nuevo turno_label
+      const turnoLabel = t.paciente?.turno_label || `Turno ${turnoFormateado}`;
 
       card.innerHTML = `
         <h2>${t.consultorio}</h2>
@@ -414,10 +482,13 @@
                <div class="paciente-detalle">Examen: ${
                  t.paciente.tipo_examen
                }</div>
+               <div class="paciente-turno">${turnoLabel}</div>
                ${
                  esAtencion
                    ? '<span class="chip en-atencion">En Atención</span>'
-                   : ''
+                   : t.paciente.atendido
+                   ? '<span class="chip atendido">Atendido</span>'
+                   : '' // Quitamos el chip "En Espera"
                }`
             : '<div class="paciente-nombre">Sin paciente asignado</div>'
         }
@@ -588,4 +659,124 @@
   window.getWebSocketStats = function () {
     return window.wsManager.getStats();
   };
+
+  // Función para mostrar estadísticas detalladas en consola
+  window.showWebSocketStats = function () {
+    const stats = window.wsManager.getStats();
+    console.group('📊 Estadísticas WebSocket');
+    console.log('🔌 Conexiones activas:', Object.keys(stats).length);
+
+    Object.entries(stats).forEach(([room, info]) => {
+      const statusIcon = info.state === 'CONNECTED' ? '✅' : '❌';
+      console.log(
+        `${statusIcon} Sala ${room}: ${info.state} (reintentos: ${info.reconnectAttempts})`
+      );
+    });
+
+    // Mostrar métricas de memoria y rendimiento
+    if (performance.memory) {
+      console.log(
+        '💾 Memoria usada:',
+        (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2),
+        'MB'
+      );
+      console.log(
+        '💾 Memoria límite:',
+        (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2),
+        'MB'
+      );
+    }
+
+    console.groupEnd();
+    return stats;
+  };
+
+  // Función para monitoreo automático (opcional - solo en desarrollo)
+  window.startWebSocketMonitoring = function (intervalSeconds = 30) {
+    if (window.wsMonitoringInterval) {
+      clearInterval(window.wsMonitoringInterval);
+    }
+
+    console.log(
+      '🔍 Iniciando monitoreo WebSocket cada',
+      intervalSeconds,
+      'segundos'
+    );
+    window.wsMonitoringInterval = setInterval(() => {
+      const stats = window.wsManager.getStats();
+      const connectedCount = Object.values(stats).filter(
+        (s) => s.state === 'CONNECTED'
+      ).length;
+      const totalCount = Object.keys(stats).length;
+
+      if (connectedCount < totalCount) {
+        console.warn(
+          `⚠️ Solo ${connectedCount}/${totalCount} conexiones WebSocket activas`
+        );
+        window.showWebSocketStats();
+      } else {
+        console.debug(
+          `✅ Todas las conexiones WebSocket activas (${connectedCount}/${totalCount})`
+        );
+      }
+    }, intervalSeconds * 1000);
+  };
+
+  window.stopWebSocketMonitoring = function () {
+    if (window.wsMonitoringInterval) {
+      clearInterval(window.wsMonitoringInterval);
+      window.wsMonitoringInterval = null;
+      console.log('🔍 Monitoreo WebSocket detenido');
+    }
+  };
+
+  // Agregar estilos CSS para los nuevos chips de estado
+  const addStatusChipStyles = () => {
+    if (!document.getElementById('status-chip-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'status-chip-styles';
+      styles.textContent = `
+        .chip {
+          display: inline-block;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-top: 8px;
+        }
+        
+        .chip.en-atencion {
+          background: linear-gradient(135deg, #28a745, #20c997);
+          color: white;
+          box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+          animation: pulse 2s infinite;
+        }
+        
+        .chip.atendido {
+          background: linear-gradient(135deg, #6c757d, #495057);
+          color: white;
+          box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+        }
+        
+        .paciente-turno {
+          font-size: 11px;
+          color: #6c757d;
+          font-style: italic;
+          margin-top: 4px;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  };
+
+  // Agregar estilos al cargar
+  document.addEventListener('DOMContentLoaded', addStatusChipStyles);
 })();

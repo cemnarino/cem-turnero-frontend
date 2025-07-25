@@ -6,6 +6,7 @@ class WebSocketManager {
     this.connections = new Map(); // Mapa de conexiones activas
     this.reconnectIntervals = new Map(); // Intervalos de reconexión
     this.reconnectAttempts = new Map(); // Contador de intentos de reconexión
+    this.roomHandlers = new Map(); // Guardar handlers para reconexión
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000; // 3 segundos
     this.baseUrl = 'ws://192.168.1.5:8000/ws';
@@ -49,6 +50,9 @@ class WebSocketManager {
       console.log(`Ya existe una conexión activa para ${roomName}`);
       return;
     }
+
+    // Guardar handlers para reconexión automática
+    this.roomHandlers.set(roomName, { onMessage, onError });
 
     // Construir URL según el tipo de sala
     let wsUrl;
@@ -147,8 +151,36 @@ class WebSocketManager {
 
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       console.warn(
-        `No se puede enviar mensaje a ${roomName}: conexión no disponible`
+        `No se puede enviar mensaje a ${roomName}: conexión no disponible (estado: ${
+          ws?.readyState || 'desconectado'
+        })`
       );
+
+      // Intentar reconectar automáticamente si el manager está activo
+      if (this.isActive && (!ws || ws.readyState === WebSocket.CLOSED)) {
+        console.log(
+          `🔄 Intentando reconectar automáticamente a ${roomName}...`
+        );
+
+        // Buscar los handlers originales si existen
+        const roomConfig = this.getRoomConfig(roomName);
+        if (roomConfig) {
+          // Intentar reconectar con los handlers guardados
+          this.connect(roomName, roomConfig.onMessage, roomConfig.onError);
+
+          // Programar reenvío del mensaje después de un breve delay
+          setTimeout(() => {
+            const newWs = this.connections.get(roomName);
+            if (newWs && newWs.readyState === WebSocket.OPEN) {
+              console.log(
+                `✅ Reconexión exitosa, reenviando mensaje a ${roomName}`
+              );
+              this.send(roomName, message);
+            }
+          }, 1000);
+        }
+      }
+
       return false;
     }
 
@@ -156,6 +188,7 @@ class WebSocketManager {
       const messageToSend =
         typeof message === 'string' ? message : JSON.stringify(message);
       ws.send(messageToSend);
+      console.log(`📤 Mensaje enviado a ${roomName}:`, message);
       return true;
     } catch (error) {
       console.error(`Error enviando mensaje a ${roomName}:`, error);
@@ -176,6 +209,25 @@ class WebSocketManager {
 
     this.clearReconnectInterval(roomName);
     this.reconnectAttempts.delete(roomName);
+    this.roomHandlers.delete(roomName);
+  }
+
+  /**
+   * Obtiene la configuración de una sala y sus handlers
+   */
+  getRoomConfig(roomName) {
+    const config = this.roomConfig[roomName];
+    const handlers = this.roomHandlers.get(roomName);
+
+    if (config && handlers) {
+      return {
+        ...config,
+        onMessage: handlers.onMessage,
+        onError: handlers.onError,
+      };
+    }
+
+    return null;
   }
 
   /**

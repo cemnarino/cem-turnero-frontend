@@ -18,6 +18,25 @@
   }
 
   /**
+   * Carga la lista de consultorio  /**
+   * Activa la página de turnos
+   */
+  function activateTurnosPage() {
+    isPageActive = true;
+
+    // Conectar a notificaciones si hay un consultorio seleccionado
+    if (selectedConsultorioId) {
+      connectToConsultorioRoom(selectedConsultorioId);
+    }
+    connectToNotifications();
+
+    // Agregar indicador de conexión WebSocket
+    addConnectionStatusIndicator();
+
+    console.log('✅ Página de turnos activada');
+  }
+
+  /**
    * Carga la lista de consultorios disponibles
    */
   async function loadConsultorios() {
@@ -670,20 +689,72 @@
   /**
    * Botón Volver a Anunciar
    */
-  document.getElementById('btnReiniciar').addEventListener('click', () => {
-    const id = consultorioSelect.value;
-    if (!id) return;
+  document
+    .getElementById('btnReiniciar')
+    .addEventListener('click', async () => {
+      const id = consultorioSelect.value;
+      if (!id) return;
 
-    // Enviar mensaje de replay usando el WebSocketManager
-    const roomName = String(id);
-    const sent = window.wsManager.send(roomName, 'replay');
+      const roomName = String(id);
+      const message = {
+        action: 'replay',
+        consultorio_id: parseInt(id, 10),
+        timestamp: new Date().toISOString(),
+      };
 
-    if (sent) {
-      showToast('Anuncio reenviado');
-    } else {
-      showToast('Error al enviar anuncio', 'error');
-    }
-  });
+      console.log(`📡 Enviando replay a sala ${roomName}:`, message);
+
+      // Verificar estado de la conexión primero
+      const wsStats = window.wsManager.getStats();
+      const roomStat = wsStats[roomName];
+
+      if (!roomStat || roomStat.state !== 'CONNECTED') {
+        console.warn(
+          `⚠️ Conexión no disponible para sala ${roomName}. Estado:`,
+          roomStat?.state || 'desconectado'
+        );
+        showToast(
+          'Reconectando... Intente nuevamente en unos segundos',
+          'info'
+        );
+
+        // Intentar reconectar si hay un consultorio seleccionado
+        if (selectedConsultorioId) {
+          connectToConsultorioRoom(selectedConsultorioId);
+        }
+        return;
+      }
+
+      // Enviar mensaje a la sala específica del consultorio
+      const sent = window.wsManager.send(roomName, message);
+
+      // IMPORTANTE: También enviar a la sala de notificaciones para asegurar que llegue al informante
+      const sentToNotifications = window.wsManager.send('notifications', {
+        ...message,
+        target_room: roomName, // Indicar de qué consultorio viene
+        action: 'replay',
+        consultorio_id: parseInt(id, 10),
+      });
+
+      if (sent || sentToNotifications) {
+        console.log(
+          `✅ Replay enviado exitosamente a sala ${roomName}${
+            sentToNotifications ? ' y notifications' : ''
+          }`
+        );
+        showToast('Anuncio reenviado');
+      } else {
+        console.error(`❌ Error enviando replay a sala ${roomName}`);
+        showToast('Error al enviar anuncio - Verificando conexión...', 'error');
+
+        // Intentar reconectar después de un error
+        setTimeout(() => {
+          if (selectedConsultorioId) {
+            connectToConsultorioRoom(selectedConsultorioId);
+          }
+        }, 1000);
+      }
+    });
 
   /**
    * Función para notificar cambio de turno
@@ -796,4 +867,69 @@
       }
     }
   });
+
+  /**
+   * Agregar indicador visual del estado de conexión WebSocket
+   */
+  function addConnectionStatusIndicator() {
+    // Solo agregar una vez
+    if (document.getElementById('ws-status-indicator')) return;
+
+    const indicator = document.createElement('div');
+    indicator.id = 'ws-status-indicator';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 1000;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    `;
+
+    // Función para actualizar el estado
+    const updateStatus = () => {
+      const stats = window.wsManager.getStats();
+      const connectedCount = Object.values(stats).filter(
+        (s) => s.state === 'CONNECTED'
+      ).length;
+      const totalCount = Object.keys(stats).length;
+
+      if (connectedCount === totalCount && totalCount > 0) {
+        indicator.textContent = `🟢 WS: ${connectedCount}/${totalCount}`;
+        indicator.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+        indicator.style.color = 'white';
+        indicator.title = 'Todas las conexiones WebSocket activas';
+      } else if (connectedCount > 0) {
+        indicator.textContent = `🟡 WS: ${connectedCount}/${totalCount}`;
+        indicator.style.background = 'linear-gradient(45deg, #ffc107, #fd7e14)';
+        indicator.style.color = '#212529';
+        indicator.title = `Solo ${connectedCount} de ${totalCount} conexiones activas`;
+      } else {
+        indicator.textContent = `🔴 WS: 0/${totalCount}`;
+        indicator.style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
+        indicator.style.color = 'white';
+        indicator.title = 'Sin conexiones WebSocket activas';
+      }
+    };
+
+    // Mostrar estadísticas detalladas al hacer clic
+    indicator.addEventListener('click', () => {
+      if (window.showWebSocketStats) {
+        window.showWebSocketStats();
+      } else {
+        console.log('WebSocket Stats:', window.wsManager.getStats());
+      }
+    });
+
+    // Actualizar cada 5 segundos
+    updateStatus();
+    setInterval(updateStatus, 5000);
+
+    document.body.appendChild(indicator);
+  }
 })();
