@@ -7,6 +7,7 @@
   const fechaHasta = document.getElementById('fechaHasta');
   const btnFiltrar = document.getElementById('btnFiltrarFechas');
   const btnLimpiar = document.getElementById('btnLimpiarFiltros');
+  const btnExportarExcel = document.getElementById('btnExportarExcel');
   const searchInput = document.getElementById('searchInput');
   const tbody = document.querySelector('#historialTable tbody');
   const noResultados = document.getElementById('noResultados');
@@ -188,6 +189,11 @@
         cargarPacientesPaginados();
       }, 500);
     });
+
+    // Botón de exportación a Excel
+    if (btnExportarExcel) {
+      btnExportarExcel.addEventListener('click', exportarAExcel);
+    }
   }
 
   function cambiarVista(atendidos) {
@@ -299,6 +305,45 @@
     `;
       tbody.appendChild(tr);
     });
+  }
+
+  /**
+   * Exporta el historial a Excel con los filtros aplicados
+   */
+  async function exportarAExcel() {
+    try {
+      // Deshabilitar botón y mostrar loading
+      btnExportarExcel.disabled = true;
+      btnExportarExcel.innerHTML =
+        '<i class="material-icons">hourglass_empty</i> Generando...';
+
+      // Preparar filtros basados en el estado actual de la página
+      const filtros = {
+        is_visible: true,
+      };
+
+      // Aplicar filtro por estado de atención
+      if (mostrarAtendidos) {
+        filtros.atendido = true;
+      } else {
+        filtros.atendido = false;
+      }
+
+      // Llamar al servicio para descargar el Excel
+      await pacienteService.exportarExcel(filtros);
+
+      showToast('Descarga de Excel iniciada correctamente', 'success');
+    } catch (error) {
+      console.error('Error exportando a Excel:', error);
+      showToast('Error al generar el archivo Excel', 'error');
+    } finally {
+      // Restaurar botón
+      setTimeout(() => {
+        btnExportarExcel.disabled = false;
+        btnExportarExcel.innerHTML =
+          '<i class="material-icons">file_download</i> Descargar Excel';
+      }, 2000);
+    }
   }
 
   // Primera carga

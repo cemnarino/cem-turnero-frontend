@@ -91,6 +91,38 @@ window.pacienteService = {
       `http://192.168.1.5:8000/pacientes/cedula/${encodeURIComponent(cedula)}`
     ).then((r) => r.json()),
 
+  // Nuevo: Exportar a Excel
+  exportarExcel: (filtros = {}) => {
+    const params = new URLSearchParams();
+
+    // Aplicar filtros disponibles
+    if (filtros.is_visible !== undefined)
+      params.append('is_visible', filtros.is_visible);
+    if (filtros.atendido !== undefined)
+      params.append('atendido', filtros.atendido);
+    if (filtros.consultorio_id)
+      params.append('consultorio_id', filtros.consultorio_id);
+
+    // Construir URL con parámetros
+    const url = `http://192.168.1.5:8000/pacientes/excel?${params.toString()}`;
+
+    // Crear un enlace temporal para descargar el archivo
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pacientes_${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/:/g, '-')}.xlsx`;
+    link.style.display = 'none';
+
+    // Agregar al DOM, hacer clic y remover
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    return Promise.resolve({ success: true, message: 'Descarga iniciada' });
+  },
+
   getNombreCompleto: (p) =>
     [p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido]
       .filter(Boolean)
