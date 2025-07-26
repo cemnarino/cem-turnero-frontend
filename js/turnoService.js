@@ -3,27 +3,32 @@
 window.turnoService = {
   // Obtener turno actual
   getCurrentTurn: (id) =>
-    fetch(`http://192.168.1.5:8000/consultorios/${id}/current`).then((r) =>
-      r.json()
-    ),
+    fetch(API_URLS.getCurrentTurno(id)).then((r) => r.json()),
 
   // Avanzar turno
   nextTurn: (id) =>
-    fetch(`http://192.168.1.5:8000/consultorios/${id}/next`, {
+    fetch(API_URLS.nextTurno(id), {
       method: 'PATCH',
     }).then((r) => r.json()),
 
   // Reiniciar turno
   resetTurn: (id) =>
-    fetch(`http://192.168.1.5:8000/consultorios/${id}/reset`, {
+    fetch(API_URLS.resetTurno(id), {
       method: 'PATCH',
     }).then((r) => r.json()),
 
   // Pacientes en espera (no atendidos, turno != actual) - MEJORADO
-  getPacientesEnEspera: (id) =>
-    fetch(
-      `http://192.168.1.5:8000/pacientes/?consultorio_id=${id}&atendido=false&is_visible=true&limit=50`
-    ).then((r) => r.json()),
+  getPacientesEnEspera: (id) => {
+    const params = new URLSearchParams({
+      consultorio_id: id,
+      atendido: false,
+      is_visible: true,
+      limit: CONFIG.APP.MAX_PATIENTS_PER_CONSULTORIO,
+    });
+    return fetch(`${API_URLS.getPacientes()}?${params.toString()}`).then((r) =>
+      r.json()
+    );
+  },
 
   // Nuevo: Obtener pacientes con paginación y filtros avanzados
   getPacientesConFiltros: (filtros = {}) => {
@@ -41,9 +46,9 @@ window.turnoService = {
     if (filtros.consultorio_id)
       params.append('consultorio_id', filtros.consultorio_id);
 
-    return fetch(
-      `http://192.168.1.5:8000/pacientes/?${params.toString()}`
-    ).then((r) => r.json());
+    return fetch(`${API_URLS.getPacientes()}?${params.toString()}`).then((r) =>
+      r.json()
+    );
   },
 
   // Nuevo: Buscar pacientes con criterios avanzados
@@ -69,9 +74,9 @@ window.turnoService = {
     if (criterios.page) params.append('page', criterios.page);
     if (criterios.per_page) params.append('per_page', criterios.per_page);
 
-    return fetch(
-      `http://192.168.1.5:8000/pacientes/buscar?${params.toString()}`
-    ).then((r) => r.json());
+    return fetch(`${API_URLS.searchPacientes()}?${params.toString()}`).then(
+      (r) => r.json()
+    );
   },
 
   // Nuevo: Contar pacientes según filtros
@@ -84,9 +89,9 @@ window.turnoService = {
     if (filtros.consultorio_id)
       params.append('consultorio_id', filtros.consultorio_id);
 
-    return fetch(
-      `http://192.168.1.5:8000/pacientes/count?${params.toString()}`
-    ).then((r) => r.json());
+    return fetch(`${API_URLS.countPacientes()}?${params.toString()}`).then(
+      (r) => r.json()
+    );
   },
 
   // Nuevo: Obtener paciente en atención para un consultorio
@@ -106,7 +111,12 @@ window.turnoService = {
       console.log(
         `🔍 Búsqueda directa de paciente en atención para consultorio ${consultorioId}`
       );
-      const url = `http://192.168.1.5:8000/pacientes/?consultorio_id=${consultorioId}&is_visible=true&limit=50`;
+      const params = new URLSearchParams({
+        consultorio_id: consultorioId,
+        is_visible: true,
+        limit: CONFIG.APP.MAX_PATIENTS_PER_CONSULTORIO,
+      });
+      const url = `${API_URLS.getPacientes()}?${params.toString()}`;
       console.log(`📡 URL de consulta: ${url}`);
 
       const response = await fetch(url);
@@ -155,7 +165,7 @@ window.turnoService = {
 
   // Nuevo: Volver a anunciar
   volverAnunciar: (id) =>
-    fetch(`http://192.168.1.5:8000/consultorios/${id}/replay`, {
+    fetch(API_URLS.replayTurno(id), {
       method: 'POST',
     }).then((r) => r.json()),
 };

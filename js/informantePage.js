@@ -353,9 +353,7 @@
     }
 
     try {
-      const data = await fetch(
-        `http://192.168.1.5:8000/consultorios/turnos/detallados`
-      ).then((r) => {
+      const data = await fetch(API_URLS.getTurnosDetallados()).then((r) => {
         if (!r.ok) {
           throw new Error(`HTTP error! status: ${r.status}`);
         }
@@ -522,9 +520,7 @@
     console.log(`🔒 Audio bloqueado para consultorio ${consultorioId}`);
 
     try {
-      const response = await fetch(
-        `http://192.168.1.5:8000/consultorios/${consultorioId}/audio`
-      );
+      const response = await fetch(API_URLS.getAudio(consultorioId));
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

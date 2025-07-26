@@ -9,7 +9,7 @@ class WebSocketManager {
     this.roomHandlers = new Map(); // Guardar handlers para reconexión
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000; // 3 segundos
-    this.baseUrl = 'ws://192.168.1.5:8000/ws';
+    this.baseUrl = API_URLS.getWebSocketUrl();
     this.isActive = true; // Flag para controlar si el manager está activo
 
     // Configuración de salas

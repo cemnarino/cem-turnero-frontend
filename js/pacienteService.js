@@ -1,17 +1,16 @@
 // js/pacienteService.js
 
 window.pacienteService = {
-  list: () => fetch(`http://192.168.1.5:8000/pacientes`).then((r) => r.json()),
-  get: (id) =>
-    fetch(`http://192.168.1.5:8000/pacientes/${id}`).then((r) => r.json()),
+  list: () => fetch(API_URLS.getPacientes()).then((r) => r.json()),
+  get: (id) => fetch(API_URLS.getPacienteById(id)).then((r) => r.json()),
   create: (p) =>
-    fetch(`http://192.168.1.5:8000/pacientes`, {
+    fetch(API_URLS.createPaciente(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(p),
     }).then((r) => r.json()),
   update: (id, p) =>
-    fetch(`http://192.168.1.5:8000/pacientes/${id}`, {
+    fetch(API_URLS.updatePaciente(id), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(p),
@@ -19,13 +18,13 @@ window.pacienteService = {
 
   // Mantener hide por compatibilidad (aunque no se usa en el nuevo backend)
   hide: (id) =>
-    fetch(`http://192.168.1.5:8000/pacientes/${id}/hide`, {
+    fetch(API_URLS.hidePaciente(id), {
       method: 'PATCH',
     }).then((r) => r.json()),
 
   // Nuevo: Eliminar paciente permanentemente (solo si está en espera)
   delete: (id) =>
-    fetch(`http://192.168.1.5:8000/pacientes/${id}`, {
+    fetch(API_URLS.deletePaciente(id), {
       method: 'DELETE',
     }).then((r) => {
       if (!r.ok) {
@@ -53,7 +52,7 @@ window.pacienteService = {
       searchParams.append('is_visible', params.is_visible);
 
     return fetch(
-      `http://192.168.1.5:8000/pacientes/paginado?${searchParams.toString()}`
+      `${API_URLS.getPacientesPaginado()}?${searchParams.toString()}`
     ).then((r) => r.json());
   },
 
@@ -80,16 +79,14 @@ window.pacienteService = {
     if (criterios.page) params.append('page', criterios.page);
     if (criterios.per_page) params.append('per_page', criterios.per_page);
 
-    return fetch(
-      `http://192.168.1.5:8000/pacientes/buscar?${params.toString()}`
-    ).then((r) => r.json());
+    return fetch(`${API_URLS.searchPacientes()}?${params.toString()}`).then(
+      (r) => r.json()
+    );
   },
 
   // Nuevo: Buscar por cédula (múltiples registros)
   buscarPorCedula: (cedula) =>
-    fetch(
-      `http://192.168.1.5:8000/pacientes/cedula/${encodeURIComponent(cedula)}`
-    ).then((r) => r.json()),
+    fetch(API_URLS.getPacienteByCedula(cedula)).then((r) => r.json()),
 
   // Nuevo: Exportar a Excel
   exportarExcel: (filtros = {}) => {
@@ -104,7 +101,7 @@ window.pacienteService = {
       params.append('consultorio_id', filtros.consultorio_id);
 
     // Construir URL con parámetros
-    const url = `http://192.168.1.5:8000/pacientes/excel?${params.toString()}`;
+    const url = `${API_URLS.exportPacientesExcel()}?${params.toString()}`;
 
     // Crear un enlace temporal para descargar el archivo
     const link = document.createElement('a');
