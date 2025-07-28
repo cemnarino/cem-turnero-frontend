@@ -12,6 +12,7 @@
   let turnoActual = {};
   let selectedConsultorioId = null; // Consultorio actualmente seleccionado
   let isPageActive = false; // Flag para controlar si la página está activa
+  let pacientesEnEspera = []; // Lista de pacientes en espera para validación del botón
 
   function safeArray(data) {
     return Array.isArray(data) ? data : [];
@@ -64,6 +65,10 @@
       noConsultorio.style.display = 'block';
       disconnectFromCurrentRoom();
       selectedConsultorioId = null;
+
+      // Resetear estado del botón cuando no hay consultorio seleccionado
+      pacientesEnEspera = [];
+      updateNextTurnButtonState();
       return;
     }
 
@@ -829,6 +834,9 @@
    * Renderiza la lista de pacientes en espera
    */
   function renderPacientes(list) {
+    // Actualizar variable global para validación del botón
+    pacientesEnEspera = list;
+
     const tbody = tablaEspera.querySelector('tbody');
     tbody.innerHTML = '';
     noEspera.style.display = list.length ? 'none' : 'block';
@@ -843,6 +851,9 @@
       `;
       tbody.appendChild(tr);
     });
+
+    // Actualizar estado del botón "Siguiente Turno"
+    updateNextTurnButtonState();
   }
 
   /**
@@ -877,18 +888,73 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
+  /**
+   * Actualiza el estado del botón "Siguiente Turno" basado en pacientes en espera
+   */
+  function updateNextTurnButtonState() {
+    const btnSiguiente = document.getElementById('btnSiguiente');
+    if (!btnSiguiente) return;
+
+    const hayPacientesEnEspera = pacientesEnEspera.length > 0;
+
+    if (hayPacientesEnEspera) {
+      // Habilitar botón
+      btnSiguiente.disabled = false;
+      btnSiguiente.style.opacity = '1';
+      btnSiguiente.style.cursor = 'pointer';
+      btnSiguiente.title = 'Pasar al siguiente paciente en espera';
+    } else {
+      // Deshabilitar botón
+      btnSiguiente.disabled = true;
+      btnSiguiente.style.opacity = '0.5';
+      btnSiguiente.style.cursor = 'not-allowed';
+      btnSiguiente.title = 'No hay pacientes en espera para llamar';
+    }
+
+    console.log(
+      `🔄 Botón siguiente turno ${
+        hayPacientesEnEspera ? 'habilitado' : 'deshabilitado'
+      } - Pacientes en espera: ${pacientesEnEspera.length}`
+    );
+  }
+
   // Event Listeners para botones
 
   /**
-   * Botón Siguiente Turno con confirmación
+   * Botón Siguiente Turno con confirmación y validación
    */
   document
     .getElementById('btnSiguiente')
-    .addEventListener('click', async () => {
+    .addEventListener('click', async (event) => {
+      const btnSiguiente = event.target;
       const id = consultorioSelect.value;
-      if (!id) return;
 
-      if (confirm('¿Desea pasar al siguiente paciente?')) {
+      // Verificar si el consultorio está seleccionado
+      if (!id) {
+        showToast('Debe seleccionar un consultorio', 'error');
+        return;
+      }
+
+      // Verificar si el botón está habilitado
+      if (btnSiguiente.disabled) {
+        showToast('No hay pacientes en espera para llamar', 'error');
+        return;
+      }
+
+      // Verificar nuevamente que hay pacientes en espera
+      if (pacientesEnEspera.length === 0) {
+        showToast('No hay pacientes en espera para llamar', 'error');
+        updateNextTurnButtonState(); // Actualizar estado del botón por si acaso
+        return;
+      }
+
+      if (
+        confirm(
+          `¿Desea pasar al siguiente paciente? (${
+            pacientesEnEspera.length
+          } paciente${pacientesEnEspera.length === 1 ? '' : 's'} en espera)`
+        )
+      ) {
         try {
           await turnoService.nextTurn(id);
           await showConsultorio(id);
