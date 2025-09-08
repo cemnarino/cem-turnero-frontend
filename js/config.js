@@ -7,7 +7,7 @@ const CONFIG = {
   // Configuración del servidor backend
   SERVER: {
     // IP y puerto del servidor FastAPI
-    HOST: '192.168.1.8',
+    HOST: '192.168.1.9',
     PORT: 8000,
 
     // URLs base para HTTP y WebSocket

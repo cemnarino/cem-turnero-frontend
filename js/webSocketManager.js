@@ -26,7 +26,7 @@ class WebSocketManager {
 
   /**
    * Conecta a una sala específica
-   * @param {string} roomName - Nombre de la sala ('1', '2', '3', 'notifications')
+   * @param {string} roomName - Nombre de la sala ('1', '2', '3', '4', 'notifications')
    * @param {function} onMessage - Callback para manejar mensajes
    * @param {function} onError - Callback opcional para manejar errores
    */

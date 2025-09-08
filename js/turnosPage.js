@@ -116,7 +116,7 @@
     // Usar el ID directamente como nombre de sala (coincide con backend)
     const roomName = String(consultorioId);
 
-    if (consultorioId >= 1 && consultorioId <= 3) {
+    if (consultorioId >= 1 && consultorioId <= 4) {
       // Conectar usando el WebSocketManager
       window.wsManager.connect(
         roomName,
@@ -129,7 +129,7 @@
       );
     } else {
       console.warn(
-        `Consultorio ID ${consultorioId} no está en el rango de salas configuradas (1-3)`
+        `Consultorio ID ${consultorioId} no está en el rango de salas configuradas (1-4)`
       );
     }
   }

@@ -1,3 +1,5 @@
+/* ===== COMMON STYLES - CSS COMPARTIDO ===== */
+
 /* ===== ROOT TOKENS ===== */
 .view {
   display: none;
@@ -40,7 +42,7 @@ body {
 /* ===== NAVBAR ===== */
 .main-navbar {
   background: var(--primary);
-  color: white; /* Texto blanco en el header */
+  color: white;
   padding: 1rem 1.5rem;
   font-weight: 600;
   font-size: 1.125rem;
@@ -49,7 +51,7 @@ body {
 
 .main-navbar h1 {
   margin: 0;
-  color: white; /* Asegurar que el h1 sea blanco */
+  color: white;
 }
 
 /* ===== TABS ===== */
@@ -110,8 +112,8 @@ body {
 
 /* ===== SECTION HEADINGS ===== */
 h1 {
-  margin: 1.5rem 1.25rem 1rem;
-  font-size: 1.875rem;
+  margin: 0.5rem 1.25rem 0.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--foreground);
 }
@@ -209,17 +211,6 @@ button[type='submit'] {
   color: white;
 }
 
-/* Botones de toggle en historial */
-#btnPendientes.active {
-  background: #f97316;
-  color: white;
-}
-
-#btnAtendidos.active {
-  background: #22c55e;
-  color: white;
-}
-
 button.primary {
   background: var(--primary);
   color: var(--primary-foreground);
@@ -309,6 +300,11 @@ table button[onclick*='Hide'] {
   color: #fff;
 }
 
+.chip.atencion {
+  background: #93c5fd;
+  color: #1e40af;
+}
+
 /* ===== UTILITIES ===== */
 .search-container input {
   width: 100%;
@@ -327,6 +323,14 @@ table button[onclick*='Hide'] {
   color: var(--muted);
   margin-top: 2rem;
   font-size: 1.125rem;
+}
+
+.search-box {
+  margin: 2rem 0;
+}
+
+.date-filters {
+  margin: 1rem 0;
 }
 
 /* ===== NOTIFICACIONES ===== */
@@ -365,149 +369,6 @@ table button[onclick*='Hide'] {
   }
 }
 
-/* ===== RESPONSIVE (TV) ===== */
-
-.turno-card {
-  width: 100%;
-  max-width: 400px;
-}
-
-/* turno actual centrado */
-.turno-actual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  border: 2px solid var(--primary);
-  border-radius: 1rem;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.turno-actual h2 {
-  margin-bottom: 1rem;
-  color: var(--primary);
-  font-size: 1.5rem;
-}
-
-/* Número del turno más grande y destacado */
-.turno-actual .numero {
-  font-size: 4.5rem;
-  font-weight: 800;
-  color: var(--primary);
-  text-shadow: 2px 2px 4px rgba(59, 130, 246, 0.2);
-  margin: 1rem 0;
-  padding: 1rem 2rem;
-  background: white;
-  border-radius: 1rem;
-  border: 3px solid var(--primary);
-  min-width: 200px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-}
-
-/* Contenedor de acciones con botones mejorados */
-.turno-actual .acciones {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.turno-actual .acciones button {
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  position: relative;
-}
-
-/* Botón Siguiente Turno - Verde */
-#btnSiguiente {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-}
-
-#btnSiguiente:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-}
-
-#btnSiguiente::before {
-  content: 'skip_next';
-  font-family: 'Material Icons';
-  font-size: 1.2rem;
-}
-
-/* Botón Volver a Anunciar - Azul */
-#btnReiniciar {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-#btnReiniciar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-#btnReiniciar::before {
-  content: 'replay';
-  font-family: 'Material Icons';
-  font-size: 1.2rem;
-}
-
-.toggle-group .toggle:nth-child(1).active {
-  background: #fcd34d; /* naranja pastel */
-  color: #92400e;
-}
-
-.toggle-group .toggle:nth-child(2).active {
-  background: #a7f3d0; /* verde pastel */
-  color: #047857;
-}
-
-/* Sección de pacientes en espera */
-.pacientes-espera {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-h2 {
-  color: var(--primary);
-  margin-bottom: 1rem;
-}
-
-/* Selector de consultorio mejorado */
-.selector {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.selector label {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-/* Panel de turnos */
-.panel {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -519,116 +380,50 @@ h2 {
   }
 }
 
-/* chip “En Atención” cuando turno == actual */
-.chip.atencion {
-  background: #93c5fd; /* azul pastel */
-  color: #1e40af;
-}
-
-.informante-view .paciente-info {
+/* ===== LOADING FRAGMENTS ===== */
+.loading-fragment {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.informante-view .paciente-nombre {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-.informante-view .paciente-detalle {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.turno-card {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 280px;
-  padding: 1rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-.turno-card.highlight {
-  background: #dbeafe;
-  border-color: #93c5fd;
-}
-.turno-card h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1.25rem;
-}
-.turno-numero {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-.paciente-nombre {
-  font-weight: 600;
-}
-.paciente-detalle {
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.turnos-horizontal {
-  display: flex;
-  flex-direction: row; /* siempre horizontal */
-  gap: 20px;
-  overflow-x: auto;
   justify-content: center;
-  padding: 10px 0;
-}
-
-.date-filters {
-  margin: 1rem 0;
-}
-
-.search-box {
-  margin: 2rem 0;
-}
-
-/* Estilos para botón de exportación */
-.export-actions {
-  margin: 1rem 0;
-  text-align: center;
-}
-
-.export-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-}
-
-.export-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-}
-
-.export-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-}
-
-.export-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.export-btn i {
+  padding: 3rem;
+  color: var(--muted);
   font-size: 1.1rem;
+}
+
+.loading-fragment::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-fragment {
+  padding: 2rem;
+  text-align: center;
+  color: var(--destructive);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  margin: 1rem;
+}
+
+.no-padding {
+  padding: 0 !important;
+}
+
+.no-margin {
+  margin: 0 !important;
 }

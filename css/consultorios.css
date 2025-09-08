@@ -1,0 +1,51 @@
+/* ===== CONSULTORIOS STYLES ===== */
+
+/* ===== ESTILOS ESPECÍFICOS PARA CONSULTORIOS ===== */
+
+/* Contenedor principal de consultorios */
+#consultorios-view {
+  /* Estilos específicos si son necesarios */
+}
+
+/* Formulario de consultorio específico */
+#consultorios-view form {
+  /* Mantiene los estilos del formulario común */
+}
+
+/* Tabla de consultorios - mejoras específicas */
+#consultorios-view table {
+  /* Mantiene estilos de tabla común pero permite personalización */
+}
+
+/* Botones específicos de consultorios */
+#consultorios-view .form-actions button {
+  /* Hereda estilos comunes de botones */
+}
+
+/* Estados específicos para consultorios */
+.consultorio-visible {
+  opacity: 1;
+}
+
+.consultorio-oculto {
+  opacity: 0.6;
+  background-color: #f3f4f6;
+}
+
+/* Indicadores de estado del consultorio */
+.consultorio-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.consultorio-estado.activo::before {
+  content: '●';
+  color: #22c55e;
+}
+
+.consultorio-estado.inactivo::before {
+  content: '●';
+  color: #6b7280;
+}

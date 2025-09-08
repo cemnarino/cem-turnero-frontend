@@ -7,8 +7,8 @@
   let pollingInterval = null; // Referencia al intervalo de polling
   let isPageActive = true; // Flag para controlar si la página está activa
 
-  // Salas de WebSocket para cada consultorio (1, 2, 3) más notificaciones
-  const consultorioRooms = ['1', '2', '3'];
+  // Salas de WebSocket para cada consultorio (1, 2, 3, 4) más notificaciones
+  const consultorioRooms = ['1', '2', '3', '4'];
 
   /**
    * Conecta a las salas de WebSocket de los consultorios
@@ -129,7 +129,7 @@
         console.log(
           `🔄 Replay recibido vía notificaciones para consultorio ${consultorioId}`
         );
-        if (consultorioId >= 1 && consultorioId <= 3) {
+        if (consultorioId >= 1 && consultorioId <= 4) {
           handleReplayMessage(consultorioId);
         }
       } else if (msg.type === 'ping') {
@@ -472,22 +472,14 @@
       const turnoLabel = t.paciente?.turno_label || `Turno ${turnoFormateado}`;
 
       card.innerHTML = `
-        <h2>${t.consultorio}</h2>
-        <div class="turno-numero">${turnoFormateado}</div>
+      <div class="turno-header">
+      <h2>${t.consultorio}</h2>
+      <div class="turno-numero">Turno: ${turnoFormateado}</div>
+      </div>
         ${
           t.paciente
             ? `<div class="paciente-nombre">${t.paciente.nombre_completo}</div>
-               <div class="paciente-detalle">Examen: ${
-                 t.paciente.tipo_examen
-               }</div>
-               <div class="paciente-turno">${turnoLabel}</div>
-               ${
-                 esAtencion
-                   ? '<span class="chip en-atencion">En Atención</span>'
-                   : t.paciente.atendido
-                   ? '<span class="chip atendido">Atendido</span>'
-                   : '' // Quitamos el chip "En Espera"
-               }`
+               `
             : '<div class="paciente-nombre">Sin paciente asignado</div>'
         }
       `;

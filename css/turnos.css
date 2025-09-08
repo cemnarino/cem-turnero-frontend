@@ -1,0 +1,139 @@
+/* ===== TURNOS STYLES ===== */
+
+/* ===== ESTILOS ESPECÍFICOS PARA TURNOS ===== */
+
+/* turno actual centrado */
+.turno-actual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid var(--primary);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.turno-actual h2 {
+  margin-bottom: 1rem;
+  color: var(--primary);
+  font-size: 1.5rem;
+}
+
+/* Número del turno más grande y destacado */
+.turno-actual .numero {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-shadow: 2px 2px 4px rgba(59, 130, 246, 0.2);
+  margin: 1rem 0;
+  padding: 1rem 2rem;
+  background: white;
+  border-radius: 1rem;
+  border: 3px solid var(--primary);
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+/* Contenedor de acciones con botones mejorados */
+.turno-actual .acciones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.turno-actual .acciones button {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Botón Siguiente Turno - Verde */
+#btnSiguiente {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+#btnSiguiente:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+#btnSiguiente::before {
+  content: 'skip_next';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Botón Volver a Anunciar - Azul */
+#btnReiniciar {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+#btnReiniciar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+#btnReiniciar::before {
+  content: 'replay';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Sección de pacientes en espera */
+.pacientes-espera {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+/* Selector de consultorio mejorado */
+.selector {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selector label {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Panel de turnos */
+.panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Toggle group para estados */
+.toggle-group .toggle:nth-child(1).active {
+  background: #fcd34d;
+  color: #92400e;
+}
+
+.toggle-group .toggle:nth-child(2).active {
+  background: #a7f3d0;
+  color: #047857;
+}

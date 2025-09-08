@@ -1,0 +1,87 @@
+/* ===== INFORMANTE STYLES ===== */
+
+/* ===== ESTILOS ESPECÍFICOS PARA INFORMANTE ===== */
+
+.turno-card {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 280px;
+  padding: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.turno-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3rem;
+}
+
+.turno-card.highlight {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.turno-card h2 {
+  margin: 0 0 0.1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.turno-numero {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.paciente-nombre {
+  font-weight: 600;
+}
+
+.paciente-detalle {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.informante-view .paciente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.informante-view .paciente-nombre {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.informante-view .paciente-detalle {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.turnos-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-x: auto;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.informante-content {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr;
+}
+
+.slider-img {
+  width: 95%;
+  height: auto;
+  border-radius: var(--radius);
+}

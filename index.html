@@ -3,7 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <title>Gestión de Consultorios – CEM Nariño</title>
-    <link rel="stylesheet" href="css/base.css" />
+    <!-- CSS Modular -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/consultorios.css" />
+    <link rel="stylesheet" href="css/pacientes.css" />
+    <link rel="stylesheet" href="css/turnos.css" />
+    <link rel="stylesheet" href="css/historial.css" />
+    <link rel="stylesheet" href="css/informante.css" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet" />
@@ -346,13 +352,21 @@
 
       <!-- ====== INFORMANTE ====== -->
       <section id="informante-view" class="view">
-        <header class="informante-header">
-          <h1>Turnos Actuales</h1>
-        </header>
+        <div class="informante-content">
+          <div class="imagenes-slider">
+            <img src="assets/slider/promo-1.png" alt="Informante" class="slider-img"/>
+          </div>
 
-        <!-- Turnos en horizontal -->
-        <div class="turnos-horizontal" id="turnosContainer">
-          <!-- se llenará dinámicamente -->
+          <div class="turnos-lista">
+            <header class="informante-header">
+              <h1 class="no-margin">Turnos Actuales</h1>
+            </header>
+
+            <!-- Turnos en horizontal -->
+            <div class="turnos-vertical no-padding" id="turnosContainer">
+              <!-- se llenará dinámicamente -->
+            </div>
+          </div>
         </div>
       </section>
     </main>

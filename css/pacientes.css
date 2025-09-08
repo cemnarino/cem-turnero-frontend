@@ -1,0 +1,78 @@
+/* ===== PACIENTES STYLES ===== */
+
+/* ===== ESTILOS ESPECÍFICOS PARA PACIENTES ===== */
+
+/* Estados específicos para pacientes */
+.paciente-atendido {
+  background-color: #f0fdf4;
+}
+
+.paciente-pendiente {
+  background-color: #fff7ed;
+}
+
+.paciente-en-atencion {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--primary);
+}
+
+/* Búsqueda de pacientes mejorada */
+#pacientes-view .search-container {
+  position: relative;
+}
+
+#pacientes-view .search-container::before {
+  content: 'search';
+  font-family: 'Material Icons';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+#pacientes-view .search-container input {
+  padding-left: 2.5rem;
+}
+
+/* Formulario de paciente específico */
+#pacientes-view .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+#pacientes-view .form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+/* Información del paciente en tabla */
+.paciente-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.paciente-nombre-completo {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.paciente-cedula {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* Botones de acción en tabla de pacientes */
+#pacientes-view table .action-buttons {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  #pacientes-view .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
