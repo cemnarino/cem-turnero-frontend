@@ -767,4 +767,69 @@
 
   // Agregar estilos al cargar
   document.addEventListener('DOMContentLoaded', addStatusChipStyles);
+
+  /**
+   * Inicializar funcionalidad del botón de toggle pantalla completa
+   */
+  function initializeFullscreenToggle() {
+    const toggleBtn = document.getElementById('toggleFullscreenBtn');
+    if (!toggleBtn) return;
+
+    toggleBtn.addEventListener('click', () => {
+      const isCurrentlyFullscreen = document.body.classList.contains(
+        'informante-fullscreen'
+      );
+
+      if (isCurrentlyFullscreen) {
+        // Salir de pantalla completa - mostrar navbar y pestañas
+        document.body.classList.remove('informante-fullscreen');
+
+        const navbar = document.querySelector('.main-navbar');
+        const tabBar = document.querySelector('.tab-bar');
+
+        if (navbar) navbar.style.display = 'block';
+        if (tabBar) tabBar.style.display = 'flex';
+
+        // Cambiar icono
+        toggleBtn.querySelector('.material-icons').textContent = 'fullscreen';
+        toggleBtn.title = 'Activar pantalla completa';
+
+        console.log('🖥️ Saliendo de modo pantalla completa');
+      } else {
+        // Entrar en pantalla completa - ocultar navbar y pestañas
+        document.body.classList.add('informante-fullscreen');
+
+        const navbar = document.querySelector('.main-navbar');
+        const tabBar = document.querySelector('.tab-bar');
+
+        if (navbar) navbar.style.display = 'none';
+        if (tabBar) tabBar.style.display = 'none';
+
+        // Cambiar icono
+        toggleBtn.querySelector('.material-icons').textContent =
+          'fullscreen_exit';
+        toggleBtn.title = 'Salir de pantalla completa';
+
+        console.log('🖥️ Entrando en modo pantalla completa');
+      }
+    });
+
+    console.log('🔲 Botón de toggle pantalla completa inicializado');
+  }
+
+  // Escuchar cuando se activa la página del informante
+  eventBus.on('tab-changed', (newTab) => {
+    if (newTab === 'informante-view') {
+      // Inicializar el botón de toggle cuando se activa la página
+      setTimeout(initializeFullscreenToggle, 100);
+    }
+  });
+
+  // Inicializar si ya estamos en la página del informante
+  document.addEventListener('DOMContentLoaded', () => {
+    const informanteView = document.getElementById('informante-view');
+    if (informanteView && informanteView.classList.contains('active')) {
+      setTimeout(initializeFullscreenToggle, 100);
+    }
+  });
 })();

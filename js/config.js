@@ -7,7 +7,7 @@ const CONFIG = {
   // Configuración del servidor backend
   SERVER: {
     // IP y puerto del servidor FastAPI
-    HOST: '192.168.1.9',
+    HOST: '192.168.1.5',
     PORT: 8000,
 
     // URLs base para HTTP y WebSocket
@@ -50,6 +50,9 @@ const CONFIG = {
       REPLAY: (id) => `/consultorios/${id}/replay`,
       AUDIO: (id) => `/consultorios/${id}/audio`,
       TURNOS_DETALLADOS: '/consultorios/turnos/detallados',
+      CERRAR_LISTA: (id) => `/consultorios/${id}/cerrar-lista`,
+      ABRIR_LISTA: (id) => `/consultorios/${id}/abrir-lista`,
+      ESTADO_LISTA: (id) => `/consultorios/${id}/estado-lista`,
     },
   },
 
@@ -124,6 +127,12 @@ const API_URLS = {
     `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.CONSULTORIOS.AUDIO(id)}`,
   getTurnosDetallados: () =>
     `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.CONSULTORIOS.TURNOS_DETALLADOS}`,
+  cerrarLista: (id) =>
+    `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.CONSULTORIOS.CERRAR_LISTA(id)}`,
+  abrirLista: (id) =>
+    `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.CONSULTORIOS.ABRIR_LISTA(id)}`,
+  getEstadoLista: (id) =>
+    `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.CONSULTORIOS.ESTADO_LISTA(id)}`,
 
   // WebSocket
   getWebSocketUrl: () => CONFIG.SERVER.WS_BASE_URL,

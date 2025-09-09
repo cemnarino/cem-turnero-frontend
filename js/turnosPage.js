@@ -13,6 +13,7 @@
   let selectedConsultorioId = null; // Consultorio actualmente seleccionado
   let isPageActive = false; // Flag para controlar si la página está activa
   let pacientesEnEspera = []; // Lista de pacientes en espera para validación del botón
+  let estadoListaConsultorio = {}; // Estado de la lista del consultorio (abierta/cerrada)
 
   function safeArray(data) {
     return Array.isArray(data) ? data : [];
@@ -68,7 +69,8 @@
 
       // Resetear estado del botón cuando no hay consultorio seleccionado
       pacientesEnEspera = [];
-      updateNextTurnButtonState();
+      estadoListaConsultorio = {};
+      updateButtonsState();
       return;
     }
 
@@ -83,6 +85,9 @@
     connectToNotifications();
 
     try {
+      // Verificar estado de la lista del consultorio
+      await checkEstadoLista(consultorioId);
+
       // Cargar turno actual
       const t = await turnoService.getCurrentTurn(consultorioId);
       turnoActual[consultorioId] = t.turn;
@@ -197,6 +202,10 @@
         handleTurnChangeMessage();
       } else if (msg.action === 'patient_update') {
         handlePatientUpdateMessage();
+      } else if (msg.action === 'lista_cerrada') {
+        handleListaCerradaMessage(msg);
+      } else if (msg.action === 'lista_abierta') {
+        handleListaAbiertaMessage(msg);
       } else if (msg.action === 'audio_ready') {
         // Audio listo para reproducir, no necesitamos hacer nada aquí
         console.log('Audio listo para consultorio:', msg.consultorio_id);
@@ -245,6 +254,16 @@
           console.log(
             `📢 Ignorando notificación - no es para consultorio ${selectedConsultorioId}`
           );
+        }
+      } else if (msg.action === 'lista_cerrada' && selectedConsultorioId) {
+        // Solo procesar si es para el consultorio seleccionado
+        if (msg.consultorio_id == selectedConsultorioId) {
+          handleListaCerradaMessage(msg);
+        }
+      } else if (msg.action === 'lista_abierta' && selectedConsultorioId) {
+        // Solo procesar si es para el consultorio seleccionado
+        if (msg.consultorio_id == selectedConsultorioId) {
+          handleListaAbiertaMessage(msg);
         }
       } else if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
@@ -343,12 +362,55 @@
   }
 
   /**
+   * Maneja mensaje de lista cerrada
+   */
+  function handleListaCerradaMessage(msg) {
+    console.log('📋 Lista cerrada recibida:', msg);
+
+    // Solo procesar si es para el consultorio seleccionado
+    if (msg.consultorio_id == selectedConsultorioId) {
+      // Actualizar estado local
+      estadoListaConsultorio.lista_cerrada = true;
+
+      // Mostrar notificación
+      showToast(`Jornada del ${msg.consultorio} terminada`, 'info');
+
+      // Actualizar UI
+      updateButtonsState();
+      updatePatientsList();
+    }
+  }
+
+  /**
+   * Maneja mensaje de lista abierta
+   */
+  function handleListaAbiertaMessage(msg) {
+    console.log('📋 Lista abierta recibida:', msg);
+
+    // Solo procesar si es para el consultorio seleccionado
+    if (msg.consultorio_id == selectedConsultorioId) {
+      // Actualizar estado local
+      estadoListaConsultorio.lista_cerrada = false;
+
+      // Mostrar notificación
+      showToast(`Atención del ${msg.consultorio} reabierta`, 'success');
+
+      // Actualizar UI
+      updateButtonsState();
+      updatePatientsList();
+    }
+  }
+
+  /**
    * Actualizar lista de pacientes silenciosamente
    */
   async function updatePatientsList() {
     if (!selectedConsultorioId || !isPageActive) return;
 
     try {
+      // Verificar estado de la lista
+      await checkEstadoLista(selectedConsultorioId);
+
       const t = await turnoService.getCurrentTurn(selectedConsultorioId);
       turnoNum.textContent = t.turn || 0;
 
@@ -852,8 +914,8 @@
       tbody.appendChild(tr);
     });
 
-    // Actualizar estado del botón "Siguiente Turno"
-    updateNextTurnButtonState();
+    // Actualizar estado de todos los botones
+    updateButtonsState();
   }
 
   /**
@@ -880,6 +942,10 @@
 
     if (type === 'error') {
       toast.style.background = '#ef4444';
+    } else if (type === 'success') {
+      toast.style.background = '#22c55e';
+    } else if (type === 'info') {
+      toast.style.background = '#3b82f6';
     } else {
       toast.style.background = '#22c55e';
     }
@@ -896,8 +962,9 @@
     if (!btnSiguiente) return;
 
     const hayPacientesEnEspera = pacientesEnEspera.length > 0;
+    const listaAbierta = !estadoListaConsultorio.lista_cerrada;
 
-    if (hayPacientesEnEspera) {
+    if (hayPacientesEnEspera && listaAbierta) {
       // Habilitar botón
       btnSiguiente.disabled = false;
       btnSiguiente.style.opacity = '1';
@@ -908,14 +975,198 @@
       btnSiguiente.disabled = true;
       btnSiguiente.style.opacity = '0.5';
       btnSiguiente.style.cursor = 'not-allowed';
-      btnSiguiente.title = 'No hay pacientes en espera para llamar';
+
+      if (!listaAbierta) {
+        btnSiguiente.title = 'La jornada del consultorio ha terminado';
+      } else {
+        btnSiguiente.title = 'No hay pacientes en espera para llamar';
+      }
     }
 
     console.log(
       `🔄 Botón siguiente turno ${
-        hayPacientesEnEspera ? 'habilitado' : 'deshabilitado'
-      } - Pacientes en espera: ${pacientesEnEspera.length}`
+        hayPacientesEnEspera && listaAbierta ? 'habilitado' : 'deshabilitado'
+      } - Pacientes en espera: ${
+        pacientesEnEspera.length
+      }, Lista abierta: ${listaAbierta}`
     );
+  }
+
+  /**
+   * Actualiza el estado de todos los botones según el estado del consultorio
+   */
+  function updateButtonsState() {
+    updateNextTurnButtonState();
+    updateTerminarJornadaButtonState();
+    updateReplayButtonState();
+    updateConsultorioVisualState();
+  }
+
+  /**
+   * Actualiza el estado del botón "Terminar Jornada"
+   */
+  function updateTerminarJornadaButtonState() {
+    const btnTerminarJornada = document.getElementById('btnTerminarJornada');
+    if (!btnTerminarJornada) return;
+
+    const listaAbierta = !estadoListaConsultorio.lista_cerrada;
+
+    if (listaAbierta) {
+      // Mostrar botón para cerrar jornada
+      btnTerminarJornada.disabled = false;
+      btnTerminarJornada.style.opacity = '1';
+      btnTerminarJornada.style.cursor = 'pointer';
+      btnTerminarJornada.textContent = 'Terminar Jornada';
+      btnTerminarJornada.title =
+        'Cerrar la atención del consultorio y terminar la jornada';
+      btnTerminarJornada.className = 'btn-cerrar-jornada';
+    } else {
+      // Mostrar botón para reabrir jornada
+      btnTerminarJornada.disabled = false;
+      btnTerminarJornada.style.opacity = '1';
+      btnTerminarJornada.style.cursor = 'pointer';
+      btnTerminarJornada.textContent = 'Reabrir Atención';
+      btnTerminarJornada.title = 'Reabrir la atención del consultorio';
+      btnTerminarJornada.className = 'btn-abrir-jornada';
+    }
+
+    console.log(
+      `🔄 Botón terminar jornada actualizado - Lista abierta: ${listaAbierta}`
+    );
+  }
+
+  /**
+   * Actualiza el estado del botón "Volver a Anunciar"
+   */
+  function updateReplayButtonState() {
+    const btnReiniciar = document.getElementById('btnReiniciar');
+    if (!btnReiniciar) return;
+
+    const listaAbierta = !estadoListaConsultorio.lista_cerrada;
+
+    if (listaAbierta) {
+      btnReiniciar.disabled = false;
+      btnReiniciar.style.opacity = '1';
+      btnReiniciar.style.cursor = 'pointer';
+      btnReiniciar.title = 'Volver a anunciar el turno actual';
+    } else {
+      btnReiniciar.disabled = true;
+      btnReiniciar.style.opacity = '0.5';
+      btnReiniciar.style.cursor = 'not-allowed';
+      btnReiniciar.title = 'La jornada del consultorio ha terminado';
+    }
+  }
+
+  /**
+   * Actualiza el estado visual del panel del consultorio
+   */
+  function updateConsultorioVisualState() {
+    const turnoActualDiv = document.querySelector('.turno-actual');
+    if (!turnoActualDiv) return;
+
+    const listaAbierta = !estadoListaConsultorio.lista_cerrada;
+
+    // Remover indicador previo si existe
+    const indicadorPrevio = turnoActualDiv.querySelector(
+      '.lista-cerrada-indicator'
+    );
+    if (indicadorPrevio) {
+      indicadorPrevio.remove();
+    }
+
+    if (!listaAbierta) {
+      // Agregar clase para estado cerrado
+      turnoActualDiv.classList.add('consultorio-cerrado');
+
+      // Agregar indicador visual
+      const indicador = document.createElement('div');
+      indicador.className = 'lista-cerrada-indicator';
+      indicador.textContent = 'Jornada Terminada';
+      turnoActualDiv.appendChild(indicador);
+    } else {
+      // Remover clase de estado cerrado
+      turnoActualDiv.classList.remove('consultorio-cerrado');
+    }
+  }
+
+  /**
+   * Verifica el estado de la lista del consultorio
+   */
+  async function checkEstadoLista(consultorioId) {
+    try {
+      const estado = await turnoService.getEstadoLista(consultorioId);
+      estadoListaConsultorio = estado;
+      console.log(
+        `📋 Estado de lista del consultorio ${consultorioId}:`,
+        estado
+      );
+
+      // Actualizar estado de botones después de obtener el estado
+      updateButtonsState();
+    } catch (error) {
+      console.error('Error verificando estado de lista:', error);
+      // Asumir que la lista está abierta en caso de error
+      estadoListaConsultorio = { lista_cerrada: false };
+      updateButtonsState();
+    }
+  }
+
+  /**
+   * Maneja el cierre de la jornada del consultorio
+   */
+  async function cerrarJornada(consultorioId) {
+    try {
+      const result = await turnoService.cerrarLista(consultorioId);
+
+      if (result.success) {
+        showToast(`Jornada del consultorio cerrada exitosamente`, 'success');
+
+        // Actualizar estado local
+        estadoListaConsultorio.lista_cerrada = true;
+
+        // Actualizar UI
+        updateButtonsState();
+
+        // Actualizar lista de pacientes
+        await updatePatientsList();
+
+        console.log('✅ Jornada cerrada exitosamente:', result);
+      } else {
+        showToast('Error al cerrar la jornada', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error cerrando jornada:', error);
+      showToast('Error al cerrar la jornada del consultorio', 'error');
+    }
+  }
+
+  /**
+   * Maneja la reapertura de la jornada del consultorio
+   */
+  async function abrirJornada(consultorioId) {
+    try {
+      const result = await turnoService.abrirLista(consultorioId);
+
+      if (result.success) {
+        showToast(`Atención del consultorio reabierta exitosamente`, 'success');
+
+        // Actualizar estado local
+        estadoListaConsultorio.lista_cerrada = false;
+
+        // Actualizar UI
+        updateButtonsState();
+
+        // Actualizar lista de pacientes
+        await updatePatientsList();
+
+        console.log('✅ Jornada reabierta exitosamente:', result);
+      } else {
+        showToast('Error al reabrir la atención', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error reabriendo jornada:', error);
+      showToast('Error al reabrir la atención del consultorio', 'error');
+    }
   }
 
   // Event Listeners para botones
@@ -997,6 +1248,50 @@
       } catch (error) {
         console.error('❌ Error en volver a anunciar:', error);
         showToast('Error al enviar anuncio', 'error');
+      }
+    });
+
+  /**
+   * Botón Terminar Jornada
+   */
+  document
+    .getElementById('btnTerminarJornada')
+    .addEventListener('click', async () => {
+      const id = consultorioSelect.value;
+      if (!id) return;
+
+      const listaAbierta = !estadoListaConsultorio.lista_cerrada;
+
+      if (listaAbierta) {
+        // Confirmar cierre de jornada
+        const consultorioNombre =
+          consultorios.find((c) => c.id == id)?.consultorio || 'consultorio';
+        const pacientesEnEsperaCount = pacientesEnEspera.length;
+
+        let mensaje = `¿Está seguro de que desea terminar la jornada del ${consultorioNombre}?`;
+
+        if (pacientesEnEsperaCount > 0) {
+          mensaje += `\n\nAún hay ${pacientesEnEsperaCount} paciente${
+            pacientesEnEsperaCount === 1 ? '' : 's'
+          } en espera.`;
+          mensaje += '\n\nAl cerrar la jornada:';
+          mensaje +=
+            '\n• El paciente en atención actual será marcado como atendido';
+          mensaje += '\n• No se podrán atender más pacientes';
+          mensaje += '\n• Los pacientes en espera quedarán pendientes';
+        }
+
+        if (confirm(mensaje)) {
+          await cerrarJornada(id);
+        }
+      } else {
+        // Confirmar reapertura de jornada
+        const consultorioNombre =
+          consultorios.find((c) => c.id == id)?.consultorio || 'consultorio';
+
+        if (confirm(`¿Desea reabrir la atención del ${consultorioNombre}?`)) {
+          await abrirJornada(id);
+        }
       }
     });
 

@@ -168,4 +168,20 @@ window.turnoService = {
     fetch(API_URLS.replayTurno(id), {
       method: 'POST',
     }).then((r) => r.json()),
+
+  // Nuevo: Cerrar lista del consultorio
+  cerrarLista: (id) =>
+    fetch(API_URLS.cerrarLista(id), {
+      method: 'PATCH',
+    }).then((r) => r.json()),
+
+  // Nuevo: Abrir lista del consultorio
+  abrirLista: (id) =>
+    fetch(API_URLS.abrirLista(id), {
+      method: 'PATCH',
+    }).then((r) => r.json()),
+
+  // Nuevo: Obtener estado de la lista
+  getEstadoLista: (id) =>
+    fetch(API_URLS.getEstadoLista(id)).then((r) => r.json()),
 };

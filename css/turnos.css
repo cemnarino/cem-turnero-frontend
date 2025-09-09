@@ -93,6 +93,81 @@
   font-size: 1.2rem;
 }
 
+/* Botón Terminar Jornada - Rojo */
+#btnTerminarJornada {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+#btnTerminarJornada:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+#btnTerminarJornada::before {
+  content: 'close';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Botón Reabrir Atención - Verde oscuro */
+#btnTerminarJornada.btn-abrir-jornada {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+
+#btnTerminarJornada.btn-abrir-jornada:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+#btnTerminarJornada.btn-abrir-jornada::before {
+  content: 'lock_open';
+  font-family: 'Material Icons';
+  font-size: 1.2rem;
+}
+
+/* Estado de botón deshabilitado para todos los botones */
+.turno-actual .acciones button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Estados especiales del consultorio */
+.consultorio-cerrado {
+  opacity: 0.6;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.consultorio-cerrado .numero {
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+/* Indicador de lista cerrada */
+.lista-cerrada-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.lista-cerrada-indicator::before {
+  content: 'lock';
+  font-family: 'Material Icons';
+  font-size: 1.1rem;
+}
+
 /* Sección de pacientes en espera */
 .pacientes-espera {
   background: var(--card);
