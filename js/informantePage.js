@@ -822,6 +822,8 @@
     if (newTab === 'informante-view') {
       // Inicializar el botón de toggle cuando se activa la página
       setTimeout(initializeFullscreenToggle, 100);
+      // Inicializar el slider
+      setTimeout(initializeImageSlider, 200);
     }
   });
 
@@ -830,6 +832,237 @@
     const informanteView = document.getElementById('informante-view');
     if (informanteView && informanteView.classList.contains('active')) {
       setTimeout(initializeFullscreenToggle, 100);
+      setTimeout(initializeImageSlider, 200);
+    }
+  });
+
+  // ===== FUNCIONALIDAD DEL SLIDER DE IMÁGENES =====
+  let imageSlider = null;
+
+  const SLIDER_CONFIG = {
+    totalImages: 10,
+    interval: 10000, // 10 segundos
+    basePath: 'assets/slider/',
+    imagePrefix: 'promo-',
+    imageExtension: '.png',
+  };
+
+  class ImageSlider {
+    constructor(container, config) {
+      this.container = container;
+      this.config = config;
+      this.currentIndex = 0;
+      this.intervalId = null;
+      this.isPlaying = true;
+      this.images = [];
+
+      this.init();
+    }
+
+    init() {
+      console.log('🎬 Inicializando slider de imágenes...');
+      this.preloadImages();
+      this.createSliderStructure();
+      this.start();
+    }
+
+    preloadImages() {
+      // Precargar todas las imágenes
+      for (let i = 1; i <= this.config.totalImages; i++) {
+        const imagePath = `${this.config.basePath}${this.config.imagePrefix}${i}${this.config.imageExtension}`;
+
+        // Validar que la imagen existe antes de agregarla
+        const img = new Image();
+        img.onload = () => {
+          console.log(`✅ Imagen cargada: promo-${i}.png`);
+        };
+        img.onerror = () => {
+          console.warn(`⚠️ No se pudo cargar: promo-${i}.png`);
+        };
+        img.src = imagePath;
+
+        // Agregar la ruta de la imagen al array
+        this.images.push(imagePath);
+      }
+
+      console.log(
+        `📸 ${this.images.length} imágenes configuradas para el slider`
+      );
+    }
+
+    createSliderStructure() {
+      // Obtener la imagen existente
+      const existingImg = this.container.querySelector('.slider-img');
+      if (!existingImg) {
+        console.error('❌ No se encontró la imagen del slider');
+        return;
+      }
+
+      // Establecer la primera imagen si no tiene src
+      if (!existingImg.src || existingImg.src === window.location.href) {
+        existingImg.src = this.images[0];
+      }
+
+      // Configurar eventos para pausar/reanudar en hover
+      this.container.addEventListener('mouseenter', () => this.pause());
+      this.container.addEventListener('mouseleave', () => this.resume());
+
+      // Crear indicadores
+      this.createIndicators();
+
+      console.log('✅ Estructura del slider creada');
+    }
+
+    createIndicators() {
+      // Crear contenedor de indicadores si no existe
+      let indicatorsContainer =
+        this.container.querySelector('.slider-indicators');
+      if (!indicatorsContainer) {
+        indicatorsContainer = document.createElement('div');
+        indicatorsContainer.className = 'slider-indicators';
+        this.container.appendChild(indicatorsContainer);
+      }
+
+      // Limpiar indicadores existentes
+      indicatorsContainer.innerHTML = '';
+
+      // Crear indicadores
+      for (let i = 0; i < this.config.totalImages; i++) {
+        const indicator = document.createElement('div');
+        indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
+        indicator.addEventListener('click', () => this.goToImage(i));
+        indicatorsContainer.appendChild(indicator);
+      }
+    }
+
+    goToImage(index) {
+      if (index < 0 || index >= this.images.length) return;
+
+      this.currentIndex = index;
+      const img = this.container.querySelector('.slider-img');
+      if (img) {
+        // Efecto de transición suave
+        img.style.opacity = '0';
+
+        setTimeout(() => {
+          img.src = this.images[this.currentIndex];
+          img.style.opacity = '1';
+        }, 300);
+      }
+
+      // Actualizar indicadores
+      this.updateIndicators();
+
+      // Reiniciar el intervalo
+      this.restart();
+
+      console.log(
+        `📸 Cambiando a imagen ${this.currentIndex + 1}/${
+          this.config.totalImages
+        }`
+      );
+    }
+
+    updateIndicators() {
+      const indicators = this.container.querySelectorAll('.indicator');
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === this.currentIndex);
+      });
+    }
+
+    nextImage() {
+      const nextIndex = (this.currentIndex + 1) % this.config.totalImages;
+      this.goToImage(nextIndex);
+    }
+
+    start() {
+      if (!this.isPlaying) return;
+
+      this.intervalId = setInterval(() => {
+        if (this.isPlaying && activeTab === 'informante-view') {
+          this.nextImage();
+        }
+      }, this.config.interval);
+
+      console.log('▶️ Slider automático iniciado');
+    }
+
+    pause() {
+      this.isPlaying = false;
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+    }
+
+    resume() {
+      if (!this.isPlaying) {
+        this.isPlaying = true;
+        this.start();
+      }
+    }
+
+    restart() {
+      this.pause();
+      this.isPlaying = true;
+      this.start();
+    }
+
+    destroy() {
+      this.pause();
+      this.container.removeEventListener('mouseenter', () => this.pause());
+      this.container.removeEventListener('mouseleave', () => this.resume());
+
+      // Limpiar indicadores
+      const indicators = this.container.querySelector('.slider-indicators');
+      if (indicators) {
+        indicators.remove();
+      }
+
+      console.log('🛑 Slider de imágenes destruido');
+    }
+  }
+
+  function initializeImageSlider() {
+    const sliderContainer = document.querySelector('.imagenes-slider');
+
+    if (!sliderContainer) {
+      console.error('❌ No se encontró el contenedor .imagenes-slider');
+      return;
+    }
+
+    // Destruir slider existente si existe
+    if (imageSlider) {
+      imageSlider.destroy();
+      imageSlider = null;
+    }
+
+    // Crear nuevo slider
+    imageSlider = new ImageSlider(sliderContainer, SLIDER_CONFIG);
+  }
+
+  function destroyImageSlider() {
+    if (imageSlider) {
+      imageSlider.destroy();
+      imageSlider = null;
+    }
+  }
+
+  // Limpiar slider al salir de la pestaña informante
+  eventBus.on('tab-changed', (newTab) => {
+    if (newTab !== 'informante-view' && imageSlider) {
+      destroyImageSlider();
+    }
+  });
+
+  // Manejar visibilidad de página para el slider
+  document.addEventListener('visibilitychange', () => {
+    if (imageSlider) {
+      if (document.hidden) {
+        imageSlider.pause();
+      } else if (activeTab === 'informante-view') {
+        imageSlider.resume();
+      }
     }
   });
 })();
