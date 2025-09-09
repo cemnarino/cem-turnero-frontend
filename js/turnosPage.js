@@ -392,8 +392,22 @@
       // Actualizar estado local
       estadoListaConsultorio.lista_cerrada = false;
 
+      // Mensaje personalizado según si saltó al próximo turno
+      let mensaje = `Atención del ${msg.consultorio} reabierta`;
+      if (msg.current_turn && msg.current_turn > 1) {
+        mensaje += ` - Saltando al turno ${msg.current_turn}`;
+      }
+      if (msg.proximo_paciente) {
+        mensaje += ` (${msg.proximo_paciente.nombre})`;
+      }
+
       // Mostrar notificación
-      showToast(`Atención del ${msg.consultorio} reabierta`, 'success');
+      showToast(mensaje, 'success');
+
+      // Actualizar turno actual en memoria si viene en el mensaje
+      if (msg.current_turn) {
+        turnoActual[selectedConsultorioId] = msg.current_turn;
+      }
 
       // Actualizar UI
       updateButtonsState();
@@ -1148,18 +1162,35 @@
       const result = await turnoService.abrirLista(consultorioId);
 
       if (result.success) {
-        showToast(`Atención del consultorio reabierta exitosamente`, 'success');
+        const mensaje =
+          result.turno_calculado && result.turno_calculado > 1
+            ? `Atención reabierta. Saltando al turno ${result.turno_calculado}`
+            : 'Atención del consultorio reabierta exitosamente';
+
+        showToast(mensaje, 'success');
 
         // Actualizar estado local
         estadoListaConsultorio.lista_cerrada = false;
 
+        // Si hay un turno calculado, actualizar el turno actual en memoria
+        if (result.current_turn) {
+          turnoActual[consultorioId] = result.current_turn;
+        }
+
         // Actualizar UI
         updateButtonsState();
 
-        // Actualizar lista de pacientes
+        // Actualizar lista de pacientes - esto mostrará el turno correcto
         await updatePatientsList();
 
         console.log('✅ Jornada reabierta exitosamente:', result);
+
+        // Mostrar información adicional si saltó al próximo turno
+        if (result.proximo_paciente) {
+          console.log(
+            `🎯 Saltando directamente al turno ${result.turno_calculado}: ${result.proximo_paciente.nombre}`
+          );
+        }
       } else {
         showToast('Error al reabrir la atención', 'error');
       }

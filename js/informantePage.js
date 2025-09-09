@@ -81,6 +81,8 @@
         handleReplayMessage(targetConsultorioId);
       } else if (msg.action === 'turn_changed') {
         handleTurnChangeMessage(consultorioId, msg);
+      } else if (msg.action === 'lista_abierta') {
+        handleListaAbiertaMessage(consultorioId, msg);
       } else if (msg.action === 'new_patient') {
         handleNewPatientMessage(consultorioId, msg);
       } else if (msg.action === 'patient_deleted') {
@@ -118,6 +120,10 @@
       } else if (msg.action === 'turn_changed') {
         // Un turno cambió - actualizar vista
         console.log('🔄 Cambio de turno (notificación):', msg.paciente);
+        loadTurnos();
+      } else if (msg.action === 'lista_abierta') {
+        // Lista de consultorio fue reabierta - actualizar vista
+        console.log('🔓 Lista reabierta (notificación):', msg);
         loadTurnos();
       } else if (msg.action === 'patient_deleted') {
         // Un paciente fue eliminado
@@ -216,6 +222,26 @@
     );
     // Actualizar datos cuando llega un nuevo paciente
     loadTurnos();
+  }
+
+  /**
+   * Maneja mensaje de lista reabierta
+   */
+  function handleListaAbiertaMessage(consultorioId, msg) {
+    console.log(`🔓 Lista reabierta en consultorio ${consultorioId}:`, msg);
+
+    // Actualizar datos inmediatamente para mostrar el nuevo turno y paciente
+    loadTurnos();
+
+    // Si hay un próximo paciente y se debe reproducir audio, hacerlo con delay
+    if (msg.proximo_paciente && activeTab === 'informante-view') {
+      setTimeout(() => {
+        console.log(
+          `🔊 Reproduciendo audio para consultorio ${consultorioId} tras reapertura`
+        );
+        playAudio(consultorioId);
+      }, 1000); // Delay más largo para asegurar que los datos se carguen primero
+    }
   }
 
   /**
