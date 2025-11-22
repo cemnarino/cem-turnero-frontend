@@ -206,6 +206,8 @@
         handleListaCerradaMessage(msg);
       } else if (msg.action === 'lista_abierta') {
         handleListaAbiertaMessage(msg);
+      } else if (msg.action === 'turn_reset') {
+        handleTurnResetMessage(msg);
       } else if (msg.action === 'audio_ready') {
         // Audio listo para reproducir, no necesitamos hacer nada aquí
         console.log('Audio listo para consultorio:', msg.consultorio_id);
@@ -264,6 +266,11 @@
         // Solo procesar si es para el consultorio seleccionado
         if (msg.consultorio_id == selectedConsultorioId) {
           handleListaAbiertaMessage(msg);
+        }
+      } else if (msg.action === 'turn_reset' && selectedConsultorioId) {
+        // Solo procesar si es para el consultorio seleccionado
+        if (msg.consultorio_id == selectedConsultorioId) {
+          handleTurnResetMessage(msg);
         }
       } else if (msg.type === 'system_update') {
         // Actualizar datos cuando hay cambios en el sistema
@@ -408,6 +415,30 @@
       if (msg.current_turn) {
         turnoActual[selectedConsultorioId] = msg.current_turn;
       }
+
+      // Actualizar UI
+      updateButtonsState();
+      updatePatientsList();
+    }
+  }
+
+  /**
+   * Maneja mensaje de reset de turno
+   */
+  function handleTurnResetMessage(msg) {
+    console.log('🔄 Reset de turno recibido:', msg);
+
+    // Solo procesar si es para el consultorio seleccionado
+    if (msg.consultorio_id == selectedConsultorioId) {
+      // Mostrar notificación
+      const mensaje = msg.pacientes_reenumerados
+        ? `Consultorio reseteado - ${msg.pacientes_reenumerados} pacientes reenumerados`
+        : 'Consultorio reseteado exitosamente';
+
+      showToast(mensaje, 'info');
+
+      // Actualizar turno actual en memoria
+      turnoActual[selectedConsultorioId] = msg.current_turn;
 
       // Actualizar UI
       updateButtonsState();
@@ -1130,10 +1161,21 @@
    */
   async function cerrarJornada(consultorioId) {
     try {
-      const result = await turnoService.cerrarLista(consultorioId);
+      // Primero cerrar la lista
+      const resultCerrar = await turnoService.cerrarLista(consultorioId);
 
-      if (result.success) {
-        showToast(`Jornada del consultorio cerrada exitosamente`, 'success');
+      if (resultCerrar.success) {
+        // Después resetear el contador de turnos
+        const resultReset = await turnoService.resetTurn(consultorioId);
+
+        if (resultReset.turn !== undefined) {
+          showToast(
+            `Jornada cerrada y contador reseteado exitosamente`,
+            'success'
+          );
+        } else {
+          showToast(`Jornada cerrada (error reseteando contador)`, 'warning');
+        }
 
         // Actualizar estado local
         estadoListaConsultorio.lista_cerrada = true;
@@ -1144,7 +1186,10 @@
         // Actualizar lista de pacientes
         await updatePatientsList();
 
-        console.log('✅ Jornada cerrada exitosamente:', result);
+        console.log('✅ Jornada cerrada y reseteada exitosamente:', {
+          cerrar: resultCerrar,
+          reset: resultReset,
+        });
       } else {
         showToast('Error al cerrar la jornada', 'error');
       }
