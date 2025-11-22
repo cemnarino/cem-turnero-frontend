@@ -6,17 +6,23 @@
 const CONFIG = {
   // Configuración del servidor backend
   SERVER: {
-    // IP y puerto del servidor FastAPI
-    HOST: '192.168.1.16',
-    PORT: 8000,
+    // Usar backend en Render (producción) o localhost (desarrollo)
+    HOST: 'cem-turnero-backend.onrender.com',
+    PORT: '', // Sin puerto para HTTPS
 
     // URLs base para HTTP y WebSocket
     get HTTP_BASE_URL() {
-      return `http://${this.HOST}:${this.PORT}`;
+      // Usar HTTPS si es Render, HTTP si es localhost
+      const protocol = this.HOST.includes('onrender.com') ? 'https' : 'http';
+      const port = this.PORT ? `:${this.PORT}` : '';
+      return `${protocol}://${this.HOST}${port}`;
     },
 
     get WS_BASE_URL() {
-      return `ws://${this.HOST}:${this.PORT}/ws`;
+      // Usar WSS (WebSocket Secure) si es Render, WS si es localhost
+      const protocol = this.HOST.includes('onrender.com') ? 'wss' : 'ws';
+      const port = this.PORT ? `:${this.PORT}` : '';
+      return `${protocol}://${this.HOST}${port}/ws`;
     },
   },
 
