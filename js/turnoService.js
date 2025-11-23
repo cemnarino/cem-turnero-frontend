@@ -20,11 +20,16 @@ window.turnoService = {
   // Pacientes en espera (no atendidos, turno != actual) - MEJORADO
   getPacientesEnEspera: (id) => {
     const params = new URLSearchParams({
-      consultorio_id: id,
       atendido: false,
       is_visible: true,
       limit: CONFIG.APP.MAX_PATIENTS_PER_CONSULTORIO,
     });
+    
+    // Solo agregar consultorio_id si es válido
+    if (id !== null && id !== undefined && id !== '') {
+      params.append('consultorio_id', id);
+    }
+    
     return fetch(`${API_URLS.getPacientes()}?${params.toString()}`).then((r) =>
       r.json()
     );
@@ -43,7 +48,7 @@ window.turnoService = {
       params.append('is_visible', filtros.is_visible);
     if (filtros.atendido !== undefined)
       params.append('atendido', filtros.atendido);
-    if (filtros.consultorio_id)
+    if (filtros.consultorio_id !== null && filtros.consultorio_id !== undefined && filtros.consultorio_id !== '')
       params.append('consultorio_id', filtros.consultorio_id);
 
     return fetch(`${API_URLS.getPacientes()}?${params.toString()}`).then((r) =>
@@ -58,7 +63,7 @@ window.turnoService = {
     // Criterios de búsqueda
     if (criterios.texto) params.append('texto', criterios.texto);
     if (criterios.cedula) params.append('cedula', criterios.cedula);
-    if (criterios.consultorio_id)
+    if (criterios.consultorio_id !== null && criterios.consultorio_id !== undefined && criterios.consultorio_id !== '')
       params.append('consultorio_id', criterios.consultorio_id);
     if (criterios.fecha_inicio)
       params.append('fecha_inicio', criterios.fecha_inicio);
