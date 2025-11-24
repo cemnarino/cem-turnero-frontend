@@ -1,0 +1,423 @@
+/* ===== ESTILOS PARA SISTEMA DE FLUJOS DE PACIENTES ===== */
+
+/* Selector de flujos (pestañas) */
+.flujo-selector {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.flujo-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.flujo-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.flujo-btn:hover::before {
+  left: 100%;
+}
+
+.flujo-btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.flujo-btn.active {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.flujo-btn i {
+  font-size: 36px;
+  color: var(--primary);
+}
+
+.flujo-btn.active i {
+  color: white;
+}
+
+.flujo-btn span {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.flujo-btn small {
+  font-size: 12px;
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* Contenedor de formularios */
+.flujos-container {
+  position: relative;
+  min-height: 600px;
+}
+
+.flujo-form {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flujo-form.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header de formulario */
+.form-header {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.form-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.form-header i {
+  font-size: 32px;
+}
+
+.form-description {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Fieldsets destacados */
+fieldset.highlight {
+  border: 2px solid var(--primary);
+  background: #f0f8ff;
+}
+
+fieldset.highlight legend {
+  background: var(--primary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+/* Notas de formulario por tipo */
+.form-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-size: 14px;
+  border-left: 4px solid;
+}
+
+.form-note.walkin {
+  background: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+.form-note.agendar {
+  background: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.form-note.checkin {
+  background: #cce5ff;
+  border-color: #007bff;
+  color: #004085;
+}
+
+.form-note i {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* Información de horarios */
+.horario-info {
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #dee2e6;
+}
+
+.horario-info strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.horario-info ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.horario-info li {
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.horario-info li::before {
+  content: '🕐';
+  font-size: 16px;
+}
+
+/* Botón de calendario */
+.btn-calendar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* Vista de check-in */
+#checkinView {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.checkin-filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.checkin-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.checkin-filters input,
+.checkin-filters select {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.checkin-list {
+  margin-top: 30px;
+}
+
+.checkin-list h3 {
+  margin-bottom: 20px;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkin-list h3::before {
+  content: '📋';
+  font-size: 24px;
+}
+
+/* Estado vacío */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+}
+
+.empty-state i {
+  font-size: 64px;
+  opacity: 0.3;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Tabla de check-in */
+#checkinTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#checkinTable thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+#checkinTable th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#checkinTable td {
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#checkinTable tbody tr {
+  transition: background 0.2s;
+}
+
+#checkinTable tbody tr:hover {
+  background: #f8f9fa;
+}
+
+/* Botón de check-in en tabla */
+.btn-checkin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-checkin:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-checkin i {
+  font-size: 18px;
+}
+
+/* Badge de hora */
+.hora-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #007bff;
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .flujo-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .flujo-btn {
+    padding: 15px;
+  }
+
+  .flujo-btn i {
+    font-size: 28px;
+  }
+
+  .flujo-btn span {
+    font-size: 14px;
+  }
+
+  .checkin-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .checkin-filters label {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #checkinTable {
+    font-size: 12px;
+  }
+
+  #checkinTable th,
+  #checkinTable td {
+    padding: 10px 8px;
+  }
+}
+
+/* Animaciones adicionales */
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.flujo-form fieldset {
+  animation: slideIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.flujo-form fieldset:nth-child(1) { animation-delay: 0.1s; }
+.flujo-form fieldset:nth-child(2) { animation-delay: 0.2s; }
+.flujo-form fieldset:nth-child(3) { animation-delay: 0.3s; }
+.flujo-form fieldset:nth-child(4) { animation-delay: 0.4s; }

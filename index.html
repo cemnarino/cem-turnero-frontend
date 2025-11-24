@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/common.css" />
     <link rel="stylesheet" href="css/consultorios.css" />
     <link rel="stylesheet" href="css/pacientes.css" />
+    <link rel="stylesheet" href="css/flujos-pacientes.css" />
     <link rel="stylesheet" href="css/turnos.css" />
     <link rel="stylesheet" href="css/historial.css" />
     <link rel="stylesheet" href="css/informante.css" />
@@ -129,21 +130,43 @@
       <section id="pacientes-view" class="view">
         <h1>Gestión de Pacientes</h1>
 
-        <section id="paciente-form-section">
-          <form id="pacienteForm">
-            <h2 id="pacienteFormTitle">Nuevo Paciente</h2>
+        <!-- SELECTOR DE FLUJO -->
+        <div class="flujo-selector">
+          <button type="button" class="flujo-btn active" data-flujo="walkin">
+            <i class="material-icons">person_add</i>
+            <span>Atención Inmediata</span>
+            <small>Llega sin cita</small>
+          </button>
+          <button type="button" class="flujo-btn" data-flujo="agendar">
+            <i class="material-icons">event</i>
+            <span>Agendar Cita</span>
+            <small>Reservar para después</small>
+          </button>
+          <button type="button" class="flujo-btn" data-flujo="checkin">
+            <i class="material-icons">check_circle</i>
+            <span>Check-In</span>
+            <small>Paciente con cita llega</small>
+          </button>
+        </div>
 
-            <!-- Botones de acción superior -->
-            <div class="top-actions">
-              <button type="button" id="btnVerAgenda" class="btn-secondary">
-                <i class="material-icons">calendar_today</i>
-                Ver Agenda
-              </button>
+        <!-- CONTENEDOR DE FORMULARIOS -->
+        <div class="flujos-container">
+          
+          <!-- ========== FORMULARIO 1: WALK-IN (ATENCIÓN INMEDIATA) ========== -->
+          <form id="walkinForm" class="flujo-form active" data-flujo="walkin">
+            <div class="form-header">
+              <h2>
+                <i class="material-icons">person_add</i>
+                Atención Inmediata (Walk-in)
+              </h2>
+              <p class="form-description">
+                ✅ Paciente llega sin cita y necesita atención ahora
+              </p>
             </div>
 
-            <!-- DATOS DE IDENTIFICACIÓN -->
+            <!-- Campos básicos obligatorios -->
             <fieldset>
-              <legend>Datos de Identificación</legend>
+              <legend>Datos del Paciente</legend>
               
               <div class="form-row">
                 <label>
@@ -359,19 +382,265 @@
               </label>
             </fieldset>
 
-            <div class="form-note">
+            <div class="form-note walkin">
               <i class="material-icons">info</i>
-              <span><span class="required">*</span> Campos obligatorios. Los demás campos pueden completarse después.</span>
+              <span><strong>Walk-in:</strong> El paciente aparecerá inmediatamente en la lista de espera y se generará su turno automáticamente.</span>
             </div>
 
             <div class="form-actions">
-              <button type="submit" id="btnPacGuardar">Registrar</button>
-              <button type="button" id="btnPacCancelar" style="display: none">
-                Cancelar
+              <button type="submit" class="btn-primary">
+                <i class="material-icons">add_circle</i>
+                Registrar y Asignar Turno
+              </button>
+              <button type="reset" class="btn-secondary">
+                <i class="material-icons">clear</i>
+                Limpiar
               </button>
             </div>
           </form>
-        </section>
+
+          <!-- ========== FORMULARIO 2: AGENDAR CITA ========== -->
+          <form id="agendarForm" class="flujo-form" data-flujo="agendar">
+            <div class="form-header">
+              <h2>
+                <i class="material-icons">event</i>
+                Agendar Cita
+              </h2>
+              <p class="form-description">
+                📅 Reservar cita para una fecha futura (el paciente NO está aquí ahora)
+              </p>
+            </div>
+
+            <!-- Fecha y hora de la cita -->
+            <fieldset class="highlight">
+              <legend>Fecha y Hora de la Cita</legend>
+              
+              <div class="form-row">
+                <label>
+                  Fecha y Hora <span class="required">*</span>
+                  <input
+                    type="datetime-local"
+                    name="hora_agendada"
+                    required
+                    title="Seleccione fecha y hora de la cita" />
+                </label>
+              </div>
+
+              <div class="horario-info">
+                <strong>Horarios de atención:</strong>
+                <ul>
+                  <li>Lunes a Viernes: 7:00 AM - 12:00 PM / 2:00 PM - 5:00 PM</li>
+                  <li>Sábados: 7:00 AM - 12:00 PM</li>
+                </ul>
+              </div>
+            </fieldset>
+
+            <!-- Usar los mismos fieldsets del formulario walk-in pero sin IDs -->
+            <fieldset>
+              <legend>Datos del Paciente</legend>
+              
+              <div class="form-row">
+                <label>
+                  Número de Documento <span class="required">*</span>
+                  <input type="text" name="numero_documento" required minlength="6" maxlength="15" />
+                </label>
+                <label>
+                  Tipo de Documento
+                  <select name="tipo_documento">
+                    <option value="CEDULA">Cédula de Ciudadanía</option>
+                    <option value="TI">Tarjeta de Identidad</option>
+                    <option value="CE">Cédula de Extranjería</option>
+                    <option value="PPT">Permiso de Protección Temporal</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Primer Nombre <span class="required">*</span>
+                  <input type="text" name="primer_nombre" required />
+                </label>
+                <label>
+                  Segundo Nombre
+                  <input type="text" name="segundo_nombre" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Primer Apellido <span class="required">*</span>
+                  <input type="text" name="primer_apellido" required />
+                </label>
+                <label>
+                  Segundo Apellido
+                  <input type="text" name="segundo_apellido" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Contacto (Teléfono)
+                  <input type="tel" name="contacto" placeholder="Ej: 3001234567" />
+                </label>
+                <label>
+                  EPS
+                  <input type="text" name="eps" placeholder="Ej: Salud Total" />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Información Laboral</legend>
+              
+              <div class="form-row">
+                <label>
+                  Empresa <span class="required">*</span>
+                  <input type="text" name="empresa" required />
+                </label>
+                <label>
+                  Cargo
+                  <input type="text" name="cargo" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  AFP
+                  <input type="text" name="afp" placeholder="Ej: Porvenir" />
+                </label>
+                <label>
+                  ARL
+                  <input type="text" name="arl" placeholder="Ej: Positiva" />
+                </label>
+              </div>
+
+              <label>
+                Responsable de la Empresa
+                <input type="text" name="responsable_empresa" placeholder="Persona que agenda - Ej: María Gómez - 3009876543" />
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Información del Examen</legend>
+              
+              <label>
+                Tipo de Examen <span class="required">*</span>
+                <select name="tipo_examen" required>
+                  <option value="">Seleccione...</option>
+                  <option value="CONSULTA_GENERAL">Consulta General</option>
+                  <option value="LABORATORIO">Laboratorio</option>
+                  <option value="EXAMEN_INGRESO">Examen Médico de Ingreso</option>
+                  <option value="EXAMEN_PERIODICO">Examen Médico Periódico</option>
+                  <option value="EXAMEN_EGRESO">Examen de Egreso</option>
+                  <option value="EXAMEN_ALTURAS">Examen con Énfasis en Alturas</option>
+                </select>
+              </label>
+
+              <label>
+                Observación
+                <textarea name="observacion" rows="3" placeholder="Información adicional sobre el examen"></textarea>
+              </label>
+
+              <div class="form-row">
+                <label>
+                  Valor (V/R)
+                  <input type="number" name="valor" min="0" step="1000" value="0" />
+                </label>
+                <label>
+                  Consultorio <span class="required">*</span>
+                  <select name="consultorio_id" required>
+                    <option value="">Cargando...</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="form-note agendar">
+              <i class="material-icons">schedule</i>
+              <span><strong>Agendamiento:</strong> El paciente NO aparecerá en la lista hasta que haga check-in el día de su cita.</span>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">
+                <i class="material-icons">event_available</i>
+                Agendar Cita
+              </button>
+              <button type="reset" class="btn-secondary">
+                <i class="material-icons">clear</i>
+                Limpiar
+              </button>
+            </div>
+          </form>
+
+          <!-- ========== FORMULARIO 3: CHECK-IN ========== -->
+          <div id="checkinView" class="flujo-form" data-flujo="checkin">
+            <div class="form-header">
+              <h2>
+                <i class="material-icons">check_circle</i>
+                Check-In - Citas del Día
+              </h2>
+              <p class="form-description">
+                ✅ Pacientes agendados que están llegando ahora
+              </p>
+            </div>
+
+            <!-- Filtros -->
+            <div class="checkin-filters">
+              <label>
+                <i class="material-icons">date_range</i>
+                Fecha:
+                <input type="date" id="checkin-fecha" />
+              </label>
+              <label>
+                <i class="material-icons">business</i>
+                Consultorio:
+                <select id="checkin-consultorio">
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <button type="button" class="btn-primary" id="btnActualizarCheckin">
+                <i class="material-icons">refresh</i>
+                Actualizar
+              </button>
+            </div>
+
+            <!-- Lista de citas pendientes de check-in -->
+            <div class="checkin-list">
+              <h3>Pacientes Agendados (Pendientes de Llegada)</h3>
+              
+              <div id="checkin-empty" class="empty-state" style="display: none;">
+                <i class="material-icons">event_busy</i>
+                <p>No hay citas agendadas para este día</p>
+              </div>
+
+              <table id="checkinTable" style="display: none;">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>Paciente</th>
+                    <th>Documento</th>
+                    <th>Empresa</th>
+                    <th>Examen</th>
+                    <th>Consultorio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="form-note checkin">
+              <i class="material-icons">how_to_reg</i>
+              <span><strong>Check-in:</strong> Al hacer check-in, el paciente aparecerá en la lista de espera y se le asignará su turno automáticamente.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LISTADO DE PACIENTES (mantener el actual) -->
+        <section id="paciente-list-section">
         <section id="paciente-list-section">
           <h2>Listado de Pacientes</h2>
 
@@ -566,6 +835,7 @@
     <script src="js/informantePage.js"></script>
 
     <script src="js/router.js"></script>
+    <script src="js/flujosPacientes.js"></script>
 
     <script>
       function showToast(msg) {
