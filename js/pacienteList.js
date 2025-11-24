@@ -158,13 +158,16 @@
 
   // Función para ver detalles con historial
   window.viewDetails = async (id) => {
+    console.log('👁️ Ver detalles llamado con ID:', id);
     try {
       const p = await pacienteService.get(id);
+      console.log('✅ Paciente obtenido:', p);
       // Obtener historial del paciente por documento
       const historial = await fetchPatientHistory(p.numero_documento || p.cedula);
+      console.log('📜 Historial obtenido:', historial.length, 'visitas');
       showPatientDetails(p, historial);
     } catch (error) {
-      console.error('Error al cargar detalles:', error);
+      console.error('❌ Error al cargar detalles:', error);
       showToast('Error al cargar detalles del paciente');
     }
   };
@@ -425,10 +428,14 @@
   };
 
   window.editPac = async (id) => {
+    console.log('✏️ Editar llamado con ID:', id);
     try {
       const p = await pacienteService.get(id);
+      console.log('✅ Paciente obtenido para editar:', p);
       eventBus.emit('edit-paciente', p);
+      console.log('📢 Evento edit-paciente emitido');
     } catch (error) {
+      console.error('❌ Error al cargar paciente:', error);
       showToast('Error al cargar paciente');
     }
   };
