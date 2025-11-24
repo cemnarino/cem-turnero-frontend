@@ -952,7 +952,7 @@
       tr.innerHTML = `
         <td>${p.turno || '—'}</td>
         <td>${pacienteService.getNombreCompleto(p)}</td>
-        <td>${p.cedula}</td>
+        <td>${p.numero_documento || p.cedula || 'N/A'}</td>
         <td>${p.tipo_examen}</td>
         <td>${new Date(p.hora_entrada).toLocaleString('es-CO')}</td>
       `;

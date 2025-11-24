@@ -62,7 +62,8 @@ window.pacienteService = {
 
     // Criterios de búsqueda
     if (criterios.texto) params.append('texto', criterios.texto);
-    if (criterios.cedula) params.append('cedula', criterios.cedula);
+    if (criterios.numero_documento) params.append('numero_documento', criterios.numero_documento);
+    if (criterios.cedula) params.append('numero_documento', criterios.cedula); // Compatibilidad
     if (criterios.consultorio_id)
       params.append('consultorio_id', criterios.consultorio_id);
     if (criterios.fecha_inicio)
@@ -84,9 +85,13 @@ window.pacienteService = {
     );
   },
 
-  // Nuevo: Buscar por cédula (múltiples registros)
-  buscarPorCedula: (cedula) =>
-    fetch(API_URLS.getPacienteByCedula(cedula)).then((r) => r.json()),
+  // Buscar por número de documento (múltiples registros)
+  buscarPorCedula: (numeroDocumento) =>
+    fetch(API_URLS.getPacienteByCedula(numeroDocumento)).then((r) => r.json()),
+  
+  // Alias para compatibilidad
+  buscarPorNumeroDocumento: (numeroDocumento) =>
+    fetch(API_URLS.getPacienteByCedula(numeroDocumento)).then((r) => r.json()),
 
   // Nuevo: Exportar a Excel
   exportarExcel: (filtros = {}) => {

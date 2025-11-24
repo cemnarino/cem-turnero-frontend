@@ -294,7 +294,7 @@
       tr.innerHTML = `
       <td>${p.id}</td>
       <td>${p.nombre_completo || pacienteService.getNombreCompleto(p)}</td>
-      <td>${p.cedula}</td>
+      <td>${p.numero_documento || p.cedula || 'N/A'}</td>
       <td>${p.tipo_examen}</td>
       <td>${p.empresa || 'N/A'}</td>
       <td>$${p.valor.toLocaleString('es-CO')}</td>
