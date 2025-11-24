@@ -142,6 +142,12 @@
   font-weight: 600;
 }
 
+/* Label con textarea debe ocupar todo el ancho */
+.flujo-form label:has(textarea) {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .flujo-form input,
 .flujo-form select,
 .flujo-form textarea {
@@ -150,6 +156,14 @@
   border-radius: 6px;
   font-size: 14px;
   transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.flujo-form textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
 }
 
 .flujo-form input:focus,
