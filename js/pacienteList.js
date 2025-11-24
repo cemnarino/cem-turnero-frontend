@@ -54,15 +54,22 @@
         badgeText = 'En Espera';
       }
 
+      const nombreCompleto = pacienteService.getNombreCompleto(p);
+      const empresa = p.empresa || 'N/A';
+      const tipoExamen = p.tipo_examen || 'N/A';
+      const documento = p.numero_documento || p.cedula || 'N/A';
+      const consultorio = cons ? cons.consultorio : 'N/A';
+      const valor = `$${p.valor.toLocaleString('es-CO')}`;
+
       tr.innerHTML = `
-      <td>${p.id}</td>
-      <td>${pacienteService.getNombreCompleto(p)}</td>
-      <td>${p.numero_documento || p.cedula || 'N/A'}</td>
-      <td>${p.tipo_examen}</td>
-      <td>${p.empresa || 'N/A'}</td>
-      <td>$${p.valor.toLocaleString('es-CO')}</td>
-      <td>${cons ? cons.consultorio : 'N/A'}</td>
-      <td>${p.turno || '—'}</td>
+      <td title="${p.id}">${p.id}</td>
+      <td title="${nombreCompleto}">${nombreCompleto}</td>
+      <td title="${documento}">${documento}</td>
+      <td title="${tipoExamen}">${tipoExamen}</td>
+      <td title="${empresa}">${empresa}</td>
+      <td title="${valor}">${valor}</td>
+      <td title="${consultorio}">${consultorio}</td>
+      <td title="${p.turno || 'Sin turno'}">${p.turno || '—'}</td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
       <td class="actions-cell">
         <div class="dropdown-menu-container">
@@ -176,7 +183,6 @@
   window.closeModal = function() {
     document.querySelector('.modal-overlay')?.remove();
   };
-}
 
   window.editPac = async (id) => {
     try {

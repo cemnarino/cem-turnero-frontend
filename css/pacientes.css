@@ -75,7 +75,85 @@
 
 #pacienteTable {
   min-width: 100%;
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Control de ancho de columnas */
+#pacienteTable th,
+#pacienteTable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 200px;
+  padding: 0.75rem 1rem;
+}
+
+/* Columnas específicas con anchos controlados */
+#pacienteTable th:nth-child(1),
+#pacienteTable td:nth-child(1) { /* ID */
+  width: 60px;
+  max-width: 60px;
+}
+
+#pacienteTable th:nth-child(2),
+#pacienteTable td:nth-child(2) { /* Nombre */
+  width: 200px;
+  max-width: 200px;
+}
+
+#pacienteTable th:nth-child(3),
+#pacienteTable td:nth-child(3) { /* Documento */
+  width: 120px;
+  max-width: 120px;
+}
+
+#pacienteTable th:nth-child(4),
+#pacienteTable td:nth-child(4) { /* Tipo Examen */
+  width: 180px;
+  max-width: 180px;
+}
+
+#pacienteTable th:nth-child(5),
+#pacienteTable td:nth-child(5) { /* Empresa */
+  width: 150px;
+  max-width: 150px;
+}
+
+#pacienteTable th:nth-child(6),
+#pacienteTable td:nth-child(6) { /* Valor */
+  width: 100px;
+  max-width: 100px;
+}
+
+#pacienteTable th:nth-child(7),
+#pacienteTable td:nth-child(7) { /* Consultorio */
+  width: 100px;
+  max-width: 100px;
+}
+
+#pacienteTable th:nth-child(8),
+#pacienteTable td:nth-child(8) { /* Turno */
+  width: 80px;
+  max-width: 80px;
+  text-align: center;
+}
+
+#pacienteTable th:nth-child(9),
+#pacienteTable td:nth-child(9) { /* Estado */
+  width: 120px;
+  max-width: 120px;
+}
+
+/* Tooltip para mostrar texto completo en hover */
+#pacienteTable td[title] {
+  cursor: help;
+}
+
+/* Para campos que deben verse completos (chips, badges) */
+#pacienteTable td .chip {
+  white-space: nowrap;
+  overflow: visible;
 }
 
 /* Columna de acciones fija a la derecha */
