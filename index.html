@@ -52,20 +52,38 @@
           <form id="consultorioForm">
             <h2 id="formTitle">Nuevo Consultorio</h2>
 
-            <label
-              >Nombre del Médico
-              <input type="text" id="nombre_medico" required />
+            <label>
+              Consultorio <span class="required">*</span>
+              <select id="consultorio" name="consultorio" required>
+                <option value="">Seleccione...</option>
+                <option value="Consultorio 1">Consultorio 1</option>
+                <option value="Consultorio 2">Consultorio 2</option>
+                <option value="Laboratorio">Laboratorio</option>
+              </select>
             </label>
 
-            <label
-              >Consultorio
-              <input type="text" id="consultorio" required />
+            <label>
+              Nombre del Médico <span class="required">*</span>
+              <input type="text" id="nombre_medico" name="nombre_medico" required />
             </label>
 
-            <label
-              >Piso
-              <input type="text" id="piso" required />
+            <label>
+              Piso <span class="required">*</span>
+              <select id="piso" name="piso" required>
+                <option value="">Seleccione...</option>
+                <option value="Piso 1">Piso 1</option>
+                <option value="Piso 2">Piso 2</option>
+                <option value="Piso 3">Piso 3</option>
+                <option value="Piso 4">Piso 4</option>
+                <option value="Piso 5">Piso 5</option>
+                <option value="Planta Baja">Planta Baja</option>
+              </select>
             </label>
+
+            <div class="form-note">
+              <i class="material-icons">info</i>
+              <span>Todos los campos son obligatorios para crear un consultorio.</span>
+            </div>
 
             <div class="form-actions">
               <button type="submit" id="btnGuardar">Guardar</button>
@@ -130,7 +148,7 @@
               <div class="form-row">
                 <label>
                   Tipo de Documento
-                  <select id="tipo_documento" name="tipo_documento" required>
+                  <select id="tipo_documento" name="tipo_documento">
                     <option value="CEDULA">Cédula de Ciudadanía</option>
                     <option value="TI">Tarjeta de Identidad</option>
                     <option value="CE">Cédula de Extranjería</option>
@@ -140,7 +158,7 @@
                 </label>
 
                 <label>
-                  Número de Documento
+                  Número de Documento <span class="required">*</span>
                   <div class="cedula-input-group">
                     <input
                       type="text"
@@ -172,7 +190,7 @@
 
               <div class="form-row">
                 <label>
-                  Primer Nombre
+                  Primer Nombre <span class="required">*</span>
                   <input
                     type="text"
                     id="primer_nombre"
@@ -187,7 +205,7 @@
 
               <div class="form-row">
                 <label>
-                  Primer Apellido
+                  Primer Apellido <span class="required">*</span>
                   <input
                     type="text"
                     id="primer_apellido"
@@ -238,7 +256,7 @@
               <legend>Información Laboral</legend>
               <div class="form-row">
                 <label>
-                  Empresa
+                  Empresa <span class="required">*</span>
                   <input
                     type="text"
                     id="empresa"
@@ -273,7 +291,7 @@
               <legend>Información del Examen</legend>
               
               <label>
-                Tipo de Examen
+                Tipo de Examen <span class="required">*</span>
                 <select id="tipo_examen" name="tipo_examen" required>
                   <option value="">Seleccione...</option>
                   <option value="CONSULTA GENERAL">CONSULTA GENERAL</option>
@@ -334,12 +352,17 @@
               </div>
 
               <label>
-                Consultorio
+                Consultorio <span class="required">*</span>
                 <select id="consultorio_id" name="consultorio_id" required>
                   <option value="">Cargando...</option>
                 </select>
               </label>
             </fieldset>
+
+            <div class="form-note">
+              <i class="material-icons">info</i>
+              <span><span class="required">*</span> Campos obligatorios. Los demás campos pueden completarse después.</span>
+            </div>
 
             <div class="form-actions">
               <button type="submit" id="btnPacGuardar">Registrar</button>

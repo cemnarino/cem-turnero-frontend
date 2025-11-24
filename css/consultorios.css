@@ -12,6 +12,56 @@
   /* Mantiene los estilos del formulario común */
 }
 
+#consultorioForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+#consultorioForm select,
+#consultorioForm input[type='text'] {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+#consultorioForm select:focus,
+#consultorioForm input[type='text']:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+#consultorioForm .required {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+#consultorioForm .form-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: #e7f3ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #004085;
+}
+
+#consultorioForm .form-note i {
+  color: #007bff;
+  font-size: 20px;
+}
+
 /* Tabla de consultorios - mejoras específicas */
 #consultorios-view table {
   /* Mantiene estilos de tabla común pero permite personalización */

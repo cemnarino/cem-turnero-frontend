@@ -362,6 +362,32 @@
   }
 }
 
+/* Indicador de campos obligatorios */
+.required {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+/* Nota informativa del formulario */
+.form-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  background: #e7f3ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #004085;
+}
+
+.form-note i {
+  color: #007bff;
+  font-size: 20px;
+}
+
 @media (max-width: 768px) {
   #pacientes-view .form-grid {
     grid-template-columns: 1fr;
@@ -379,5 +405,9 @@
   .modal-content {
     max-width: 95%;
     max-height: 95vh;
+  }
+  
+  .form-note {
+    font-size: 13px;
   }
 }

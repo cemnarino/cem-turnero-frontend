@@ -56,13 +56,13 @@
     ];
     
     optionalFields.forEach((field) => {
-      if (!data[field] || data[field].trim() === '') {
+      if (!data[field] || String(data[field]).trim() === '') {
         data[field] = null;
       }
     });
 
-    // Validar que el número de documento sea alfanumérico
-    if (!/^[0-9A-Za-z]{6,15}$/.test(data.numero_documento)) {
+    // Validar que el número de documento sea alfanumérico (SOLO si no está vacío)
+    if (data.numero_documento && !/^[0-9A-Za-z]{6,15}$/.test(data.numero_documento)) {
       showToast(
         'El número de documento debe tener entre 6 y 15 caracteres',
         'error'
@@ -70,12 +70,43 @@
       return;
     }
 
-    // Validar contacto si existe
-    if (data.contacto && !/^[0-9]{7,10}$/.test(data.contacto)) {
+    // Validar contacto si existe y no está vacío
+    if (data.contacto && String(data.contacto).trim() !== '' && !/^[0-9]{7,10}$/.test(data.contacto)) {
       showToast(
         'El contacto debe ser un número de teléfono válido (7-10 dígitos)',
         'error'
       );
+      return;
+    }
+    
+    // Validaciones para campos obligatorios
+    if (!data.numero_documento || String(data.numero_documento).trim() === '') {
+      showToast('El número de documento es obligatorio', 'error');
+      return;
+    }
+    
+    if (!data.primer_nombre || String(data.primer_nombre).trim() === '') {
+      showToast('El primer nombre es obligatorio', 'error');
+      return;
+    }
+    
+    if (!data.primer_apellido || String(data.primer_apellido).trim() === '') {
+      showToast('El primer apellido es obligatorio', 'error');
+      return;
+    }
+    
+    if (!data.empresa || String(data.empresa).trim() === '') {
+      showToast('La empresa es obligatoria', 'error');
+      return;
+    }
+    
+    if (!data.tipo_examen || String(data.tipo_examen).trim() === '') {
+      showToast('El tipo de examen es obligatorio', 'error');
+      return;
+    }
+    
+    if (!data.consultorio_id) {
+      showToast('Debe seleccionar un consultorio', 'error');
       return;
     }
 
