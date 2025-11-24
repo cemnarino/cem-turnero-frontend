@@ -178,7 +178,7 @@
       if (e.target === modal) closeModal();
     };
     document.body.appendChild(modal);
-  }
+  };
 
   window.closeModal = function() {
     document.querySelector('.modal-overlay')?.remove();
