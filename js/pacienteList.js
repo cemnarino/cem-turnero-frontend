@@ -58,7 +58,9 @@
       const empresa = p.empresa || 'N/A';
       const tipoExamen = p.tipo_examen || 'N/A';
       const documento = p.numero_documento || p.cedula || 'N/A';
-      const consultorio = cons ? cons.consultorio : 'N/A';
+      const consultorioFull = cons ? cons.consultorio : 'N/A';
+      // Extraer solo el número del consultorio (ej: "Consultorio 1" -> "1")
+      const consultorioNum = consultorioFull.replace(/[^0-9]/g, '') || consultorioFull;
       const valor = `$${p.valor.toLocaleString('es-CO')}`;
 
       tr.innerHTML = `
@@ -68,7 +70,7 @@
       <td title="${tipoExamen}">${tipoExamen}</td>
       <td title="${empresa}">${empresa}</td>
       <td title="${valor}">${valor}</td>
-      <td title="${consultorio}">${consultorio}</td>
+      <td title="${consultorioFull}">${consultorioNum}</td>
       <td title="${p.turno || 'Sin turno'}">${p.turno || '—'}</td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
       <td class="actions-cell">
@@ -115,6 +117,7 @@
   // Función para toggle del menú dropdown
   window.toggleMenu = function(event, id) {
     event.stopPropagation();
+    const button = event.currentTarget;
     const menu = document.getElementById(`menu-${id}`);
     const allMenus = document.querySelectorAll('.dropdown-menu');
     
@@ -124,6 +127,23 @@
         m.classList.remove('show');
       }
     });
+    
+    // Calcular posición del menú
+    const rect = button.getBoundingClientRect();
+    const menuHeight = 150; // Altura aproximada del menú
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    
+    // Decidir si mostrar arriba o abajo
+    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+      // Mostrar arriba
+      menu.style.top = (rect.top - menuHeight) + 'px';
+    } else {
+      // Mostrar abajo
+      menu.style.top = rect.bottom + 'px';
+    }
+    
+    menu.style.left = (rect.right - 180) + 'px'; // 180px = ancho del menú
     
     // Toggle del menú actual
     menu.classList.toggle('show');
