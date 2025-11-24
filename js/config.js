@@ -86,6 +86,9 @@ const CONFIG = {
  * Funciones helper para construir URLs completas
  */
 const API_URLS = {
+  // Base URL
+  base: CONFIG.SERVER.HTTP_BASE_URL,
+  
   // Pacientes
   getPacientes: () =>
     `${CONFIG.SERVER.HTTP_BASE_URL}${CONFIG.API.PACIENTES.LIST}`,
