@@ -115,87 +115,231 @@
           <form id="pacienteForm">
             <h2 id="pacienteFormTitle">Nuevo Paciente</h2>
 
-            <label
-              >Primer Nombre
-              <input
-                type="text"
-                id="primer_nombre"
-                name="primer_nombre"
-                required
-            /></label>
-            <label
-              >Segundo Nombre
-              <input type="text" id="segundo_nombre" name="segundo_nombre"
-            /></label>
-            <label
-              >Primer Apellido
-              <input
-                type="text"
-                id="primer_apellido"
-                name="primer_apellido"
-                required
-            /></label>
-            <label
-              >Segundo Apellido
-              <input type="text" id="segundo_apellido" name="segundo_apellido"
-            /></label>
-            <label
-              >Cédula
-              <div class="cedula-input-group">
-                <input
-                  type="text"
-                  id="cedula"
-                  name="cedula"
-                  pattern="^[0-9]{6,15}$"
-                  placeholder="Ingrese solo números (6-15 dígitos)"
-                  maxlength="15"
-                  minlength="6"
-                  required />
-                <button
-                  type="button"
-                  id="btnBuscarCedula"
-                  class="search-btn"
-                  title="Buscar historial">
-                  <i class="material-icons">search</i>
-                </button>
-              </div>
-            </label>
-
-            <!-- Resultados de la búsqueda por cédula -->
-            <div
-              id="resultadosBusquedaCedula"
-              class="busqueda-resultados"
-              style="display: none">
-              <!-- Se llenará dinámicamente -->
+            <!-- Botones de acción superior -->
+            <div class="top-actions">
+              <button type="button" id="btnVerAgenda" class="btn-secondary">
+                <i class="material-icons">calendar_today</i>
+                Ver Agenda
+              </button>
             </div>
 
-            <label
-              >Tipo de Examen
-              <select id="tipo_examen" name="tipo_examen" required>
-                <option value="">Seleccione...</option>
-                <option>Consulta General</option>
-                <option>Laboratorio</option>
-                <option>Rayos X</option>
-                <option>Especialidad</option>
-                <option>Ecografía</option>
-                <option>Otro</option>
-              </select>
-            </label>
+            <!-- DATOS DE IDENTIFICACIÓN -->
+            <fieldset>
+              <legend>Datos de Identificación</legend>
+              
+              <div class="form-row">
+                <label>
+                  Tipo de Documento
+                  <select id="tipo_documento" name="tipo_documento" required>
+                    <option value="CEDULA">Cédula de Ciudadanía</option>
+                    <option value="TI">Tarjeta de Identidad</option>
+                    <option value="CE">Cédula de Extranjería</option>
+                    <option value="PPT">Permiso de Protección Temporal</option>
+                    <option value="PERMISO_TURISMO">Permiso de Turismo</option>
+                  </select>
+                </label>
 
-            <label
-              >Empresa <input type="text" id="empresa" name="empresa"
-            /></label>
-            <label
-              >Valor
-              <input type="number" id="valor" name="valor" min="0" required
-            /></label>
+                <label>
+                  Número de Documento
+                  <div class="cedula-input-group">
+                    <input
+                      type="text"
+                      id="numero_documento"
+                      name="numero_documento"
+                      pattern="^[0-9A-Za-z]{6,15}$"
+                      placeholder="Ingrese el número"
+                      maxlength="15"
+                      minlength="6"
+                      required />
+                    <button
+                      type="button"
+                      id="btnBuscarCedula"
+                      class="search-btn"
+                      title="Buscar historial">
+                      <i class="material-icons">search</i>
+                    </button>
+                  </div>
+                </label>
+              </div>
 
-            <label
-              >Consultorio
-              <select id="consultorio_id" name="consultorio_id" required>
-                <option value="">Cargando...</option>
-              </select>
-            </label>
+              <!-- Resultados de la búsqueda por cédula -->
+              <div
+                id="resultadosBusquedaCedula"
+                class="busqueda-resultados"
+                style="display: none">
+                <!-- Se llenará dinámicamente -->
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Primer Nombre
+                  <input
+                    type="text"
+                    id="primer_nombre"
+                    name="primer_nombre"
+                    required />
+                </label>
+                <label>
+                  Segundo Nombre
+                  <input type="text" id="segundo_nombre" name="segundo_nombre" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Primer Apellido
+                  <input
+                    type="text"
+                    id="primer_apellido"
+                    name="primer_apellido"
+                    required />
+                </label>
+                <label>
+                  Segundo Apellido
+                  <input type="text" id="segundo_apellido" name="segundo_apellido" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Contacto (Teléfono)
+                  <input
+                    type="text"
+                    id="contacto"
+                    name="contacto"
+                    pattern="^[0-9]{7,10}$"
+                    placeholder="3001234567"
+                    maxlength="10" />
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- SEGURIDAD SOCIAL -->
+            <fieldset>
+              <legend>Seguridad Social</legend>
+              <div class="form-row">
+                <label>
+                  EPS
+                  <input type="text" id="eps" name="eps" placeholder="Ej: Salud Total" />
+                </label>
+                <label>
+                  AFP
+                  <input type="text" id="afp" name="afp" placeholder="Ej: Porvenir" />
+                </label>
+                <label>
+                  ARL
+                  <input type="text" id="arl" name="arl" placeholder="Ej: Positiva" />
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- INFORMACIÓN LABORAL -->
+            <fieldset>
+              <legend>Información Laboral</legend>
+              <div class="form-row">
+                <label>
+                  Empresa
+                  <input
+                    type="text"
+                    id="empresa"
+                    name="empresa"
+                    placeholder="Nombre de la empresa"
+                    required />
+                </label>
+                <label>
+                  Cargo
+                  <input
+                    type="text"
+                    id="cargo"
+                    name="cargo"
+                    placeholder="Ej: Operario" />
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Responsable de Empresa (Quien agenda)
+                  <input
+                    type="text"
+                    id="responsable_empresa"
+                    name="responsable_empresa"
+                    placeholder="Nombre de quien solicita la cita" />
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- INFORMACIÓN DEL EXAMEN -->
+            <fieldset>
+              <legend>Información del Examen</legend>
+              
+              <label>
+                Tipo de Examen
+                <select id="tipo_examen" name="tipo_examen" required>
+                  <option value="">Seleccione...</option>
+                  <option value="CONSULTA GENERAL">CONSULTA GENERAL</option>
+                  <option value="LABORATORIO">LABORATORIO</option>
+                  <option value="EXAMEN_INGRESO">Examen médico ocupacional de ingreso o preocupacional</option>
+                  <option value="EXAMEN_PERIODICO">Examen médico ocupacional periódico</option>
+                  <option value="EXAMEN_EGRESO">Examen ocupacional de Egreso</option>
+                  <option value="EXAMEN_ALTURAS">Examen médico con énfasis en alturas</option>
+                  <option value="MANIPULADORES_ALIMENTOS">Examen médico para manipuladores de alimentos</option>
+                  <option value="POST_INCAPACIDAD">Exámenes médicos post incapacidad</option>
+                  <option value="TRABAJO_SEGURO_CONDUCTORES">Examen médico de trabajo seguro para conductores</option>
+                  <option value="TRABAJOS_ALTURA">Evaluación médica para trabajos en altura</option>
+                  <option value="AUDIOMETRIA">Audiometría tamizaje ocupacional</option>
+                  <option value="TAMIZAJE_VISUAL">Tamizaje visual</option>
+                  <option value="OPTOMETRIA">Optometría ocupacional</option>
+                  <option value="VISIOMETRIA">Visiometría</option>
+                  <option value="FRAMINGHAM">Test de framingham</option>
+                  <option value="RIESGO_CARDIOVASCULAR">Valoración del riesgo cardiovascular para trabajadores</option>
+                  <option value="PSICOACTIVAS">Prueba cualitativa de sustancias psicoactivas</option>
+                  <option value="ELECTROCARDIOGRAMA">Electrocardiograma</option>
+                  <option value="ESPIROMETRIA">Espirometría ocupacional</option>
+                  <option value="BATERIA_PSICOSOCIAL">Aplicación de batería riesgo psicosocial</option>
+                  <option value="PSICOLOGIA">Consulta de psicología</option>
+                  <option value="MEDICINA_GENERAL">Consulta de medicina general</option>
+                </select>
+              </label>
+
+              <label>
+                Observación (Información adicional)
+                <textarea
+                  id="observacion"
+                  name="observacion"
+                  rows="3"
+                  placeholder="Información adicional sobre el examen a realizar"></textarea>
+              </label>
+
+              <div class="form-row">
+                <label>
+                  Valor (V/R)
+                  <input
+                    type="number"
+                    id="valor"
+                    name="valor"
+                    min="0"
+                    step="1000"
+                    placeholder="0"
+                    value="0" />
+                </label>
+
+                <label>
+                  Hora Agendada (Opcional)
+                  <input
+                    type="datetime-local"
+                    id="hora_agendada"
+                    name="hora_agendada"
+                    title="Si agenda con anticipación, seleccione fecha y hora" />
+                </label>
+              </div>
+
+              <label>
+                Consultorio
+                <select id="consultorio_id" name="consultorio_id" required>
+                  <option value="">Cargando...</option>
+                </select>
+              </label>
+            </fieldset>
 
             <div class="form-actions">
               <button type="submit" id="btnPacGuardar">Registrar</button>

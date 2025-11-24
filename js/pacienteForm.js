@@ -28,14 +28,54 @@
     const data = Object.fromEntries(new FormData(form));
 
     // Conversiones de tipos específicas
-    data.valor = Number(data.valor);
+    data.valor = Number(data.valor) || 0;
     data.consultorio_id = Number(data.consultorio_id);
-    // Mantener cedula como string pero validar que sea numérica
-    data.cedula = String(data.cedula).trim();
+    data.numero_documento = String(data.numero_documento).trim();
+    
+    // Convertir hora_agendada a formato ISO si existe
+    if (data.hora_agendada) {
+      // El input datetime-local ya viene en formato correcto, solo agregar zona horaria
+      const localDate = new Date(data.hora_agendada);
+      // Ajustar a UTC-5 (Colombia)
+      data.hora_agendada = localDate.toISOString();
+    } else {
+      data.hora_agendada = null;
+    }
 
-    // Validar que la cédula solo contenga números
-    if (!/^\d+$/.test(data.cedula)) {
-      showToast('La cédula debe contener solo números', 'error');
+    // Limpiar campos vacíos opcionales
+    const optionalFields = [
+      'segundo_nombre',
+      'segundo_apellido',
+      'eps',
+      'afp',
+      'arl',
+      'cargo',
+      'contacto',
+      'responsable_empresa',
+      'observacion',
+    ];
+    
+    optionalFields.forEach((field) => {
+      if (!data[field] || data[field].trim() === '') {
+        data[field] = null;
+      }
+    });
+
+    // Validar que el número de documento sea alfanumérico
+    if (!/^[0-9A-Za-z]{6,15}$/.test(data.numero_documento)) {
+      showToast(
+        'El número de documento debe tener entre 6 y 15 caracteres',
+        'error'
+      );
+      return;
+    }
+
+    // Validar contacto si existe
+    if (data.contacto && !/^[0-9]{7,10}$/.test(data.contacto)) {
+      showToast(
+        'El contacto debe ser un número de teléfono válido (7-10 dígitos)',
+        'error'
+      );
       return;
     }
 
@@ -48,6 +88,11 @@
       } else {
         await pacienteService.create(data);
         showToast('Paciente registrado');
+        
+        // Recargar agenda si estaba abierta
+        if (window.agendaManager) {
+          window.agendaManager.reload();
+        }
       }
       resetForm();
       // Emitir eventos para actualizar todas las vistas relacionadas
@@ -62,14 +107,15 @@
   });
   btnCancelar.addEventListener('click', resetForm);
 
-  // Validación en tiempo real para el campo cédula
-  if (cedulaInput) {
-    // Solo permitir números en el input
-    cedulaInput.addEventListener('input', (e) => {
-      // Remover cualquier carácter que no sea número
-      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+  // Validación en tiempo real para el campo número de documento
+  const numeroDocInput = document.getElementById('numero_documento');
+  if (numeroDocInput) {
+    // Permitir números y letras (para CE y otros documentos)
+    numeroDocInput.addEventListener('input', (e) => {
+      // Remover caracteres especiales, permitir números y letras
+      e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g, '');
 
-      // Limpiar resultados de búsqueda cuando se modifica la cédula
+      // Limpiar resultados de búsqueda cuando se modifica el documento
       if (resultadosDiv) {
         resultadosDiv.style.display = 'none';
         resultadosDiv.innerHTML = '';
@@ -77,29 +123,38 @@
     });
 
     // Validar cuando el usuario salga del campo
-    cedulaInput.addEventListener('blur', (e) => {
+    numeroDocInput.addEventListener('blur', (e) => {
       const value = e.target.value.trim();
       if (value && (value.length < 6 || value.length > 15)) {
-        e.target.setCustomValidity('La cédula debe tener entre 6 y 15 dígitos');
+        e.target.setCustomValidity(
+          'El documento debe tener entre 6 y 15 caracteres'
+        );
         e.target.reportValidity();
       } else {
         e.target.setCustomValidity('');
       }
     });
   }
+  
+  // Compatibilidad con código antiguo que usa 'cedula'
+  if (cedulaInput && !numeroDocInput) {
+    cedulaInput.id = 'numero_documento';
+    cedulaInput.name = 'numero_documento';
+  }
 
-  // Funcionalidad de búsqueda por cédula
-  if (btnBuscarCedula && cedulaInput && resultadosDiv) {
+  // Funcionalidad de búsqueda por documento
+  if (btnBuscarCedula && resultadosDiv) {
     btnBuscarCedula.addEventListener('click', async () => {
-      const cedula = cedulaInput.value.trim();
+      const docInput = document.getElementById('numero_documento') || cedulaInput;
+      const documento = docInput ? docInput.value.trim() : '';
 
-      if (!cedula) {
-        showToast('Ingrese una cédula para buscar', 'warning');
+      if (!documento) {
+        showToast('Ingrese un número de documento para buscar', 'warning');
         return;
       }
 
-      if (cedula.length < 6) {
-        showToast('La cédula debe tener al menos 6 dígitos', 'warning');
+      if (documento.length < 6) {
+        showToast('El documento debe tener al menos 6 caracteres', 'warning');
         return;
       }
 
@@ -108,7 +163,7 @@
         btnBuscarCedula.innerHTML =
           '<i class="material-icons">hourglass_empty</i>';
 
-        const resultado = await pacienteService.buscarPorCedula(cedula);
+        const resultado = await pacienteService.buscarPorCedula(documento);
 
         if (resultado.found && resultado.registros.length > 0) {
           mostrarResultadosBusqueda(resultado);
@@ -116,7 +171,7 @@
           mostrarSinResultados();
         }
       } catch (error) {
-        console.error('Error en búsqueda por cédula:', error);
+        console.error('Error en búsqueda por documento:', error);
         if (error.message.includes('404')) {
           mostrarSinResultados();
         } else {
