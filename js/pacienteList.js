@@ -64,32 +64,119 @@
       <td>${cons ? cons.consultorio : 'N/A'}</td>
       <td>${p.turno || '—'}</td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
-      <td>
-        <button class="icon-btn" onclick="editPac(${p.id})" title="Editar">
-          <i class="material-icons">edit</i>
-        </button>
-        ${renderDeleteButton(p)}
+      <td class="actions-cell">
+        <div class="dropdown-menu-container">
+          <button class="menu-btn" onclick="toggleMenu(event, ${p.id})" aria-label="Opciones">
+            <i class="material-icons">more_vert</i>
+          </button>
+          <div class="dropdown-menu" id="menu-${p.id}">
+            <button class="dropdown-item" onclick="viewDetails(${p.id})">
+              <i class="material-icons">visibility</i>
+              Ver Detalles
+            </button>
+            <button class="dropdown-item" onclick="editPac(${p.id})">
+              <i class="material-icons">edit</i>
+              Editar
+            </button>
+            ${renderDeleteMenuItem(p)}
+          </div>
+        </div>
       </td>
     `;
       tbody.appendChild(tr);
     });
   }
 
-  // Función para renderizar el botón de eliminar condicionalmente
-  function renderDeleteButton(paciente) {
+  // Función para renderizar el item de menú de eliminar condicionalmente
+  function renderDeleteMenuItem(paciente) {
     // Solo permitir eliminar si el paciente está en espera (no en atención ni atendido)
     if (!paciente.en_atencion && !paciente.atendido) {
-      return `<button class="icon-btn delete-btn" onclick="deletePac(${paciente.id})" title="Eliminar">
+      return `<button class="dropdown-item delete-item" onclick="deletePac(${paciente.id})">
                 <i class="material-icons">delete</i>
+                Eliminar
               </button>`;
     } else {
-      // Mostrar botón deshabilitado con explicación
+      // Mostrar item deshabilitado con explicación
       const razon = paciente.en_atencion ? 'en atención' : 'ya atendido';
-      return `<button class="icon-btn" disabled title="No se puede eliminar: paciente ${razon}">
-                <i class="material-icons" style="color: #ccc;">block</i>
+      return `<button class="dropdown-item" disabled title="No se puede eliminar: paciente ${razon}">
+                <i class="material-icons">block</i>
+                No disponible
               </button>`;
     }
   }
+
+  // Función para toggle del menú dropdown
+  window.toggleMenu = function(event, id) {
+    event.stopPropagation();
+    const menu = document.getElementById(`menu-${id}`);
+    const allMenus = document.querySelectorAll('.dropdown-menu');
+    
+    // Cerrar todos los demás menús
+    allMenus.forEach(m => {
+      if (m.id !== `menu-${id}`) {
+        m.classList.remove('show');
+      }
+    });
+    
+    // Toggle del menú actual
+    menu.classList.toggle('show');
+  };
+
+  // Cerrar menús al hacer click fuera
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.remove('show');
+    });
+  });
+
+  // Función para ver detalles
+  window.viewDetails = async (id) => {
+    try {
+      const p = await pacienteService.get(id);
+      showPatientDetails(p);
+    } catch (error) {
+      showToast('Error al cargar detalles del paciente');
+    }
+  };
+
+  // Función para mostrar detalles del paciente (puedes personalizar esto)
+  function showPatientDetails(p) {
+    const cons = consultorios[p.consultorio_id];
+    const details = `
+      <div class="patient-details-modal">
+        <h3>Detalles del Paciente</h3>
+        <div class="detail-row"><strong>ID:</strong> ${p.id}</div>
+        <div class="detail-row"><strong>Nombre:</strong> ${pacienteService.getNombreCompleto(p)}</div>
+        <div class="detail-row"><strong>Documento:</strong> ${p.numero_documento || p.cedula}</div>
+        <div class="detail-row"><strong>Tipo Documento:</strong> ${p.tipo_documento}</div>
+        <div class="detail-row"><strong>Contacto:</strong> ${p.contacto || 'N/A'}</div>
+        <div class="detail-row"><strong>EPS:</strong> ${p.eps || 'N/A'}</div>
+        <div class="detail-row"><strong>AFP:</strong> ${p.afp || 'N/A'}</div>
+        <div class="detail-row"><strong>ARL:</strong> ${p.arl || 'N/A'}</div>
+        <div class="detail-row"><strong>Empresa:</strong> ${p.empresa}</div>
+        <div class="detail-row"><strong>Cargo:</strong> ${p.cargo || 'N/A'}</div>
+        <div class="detail-row"><strong>Tipo Examen:</strong> ${p.tipo_examen}</div>
+        <div class="detail-row"><strong>Valor:</strong> $${p.valor.toLocaleString('es-CO')}</div>
+        <div class="detail-row"><strong>Consultorio:</strong> ${cons ? cons.consultorio : 'N/A'}</div>
+        <div class="detail-row"><strong>Turno:</strong> ${p.turno || '—'}</div>
+        <div class="detail-row"><strong>Observación:</strong> ${p.observacion || 'N/A'}</div>
+        <button class="btn-primary" onclick="closeModal()">Cerrar</button>
+      </div>
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = details;
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
+    document.body.appendChild(modal);
+  }
+
+  window.closeModal = function() {
+    document.querySelector('.modal-overlay')?.remove();
+  };
+}
 
   window.editPac = async (id) => {
     try {

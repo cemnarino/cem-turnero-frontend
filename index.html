@@ -650,22 +650,25 @@
               placeholder="Buscar paciente..." />
           </div>
 
-          <table id="pacienteTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Tipo Examen</th>
-                <th>Empresa</th>
-                <th>Valor</th>
-                <th>Consultorio</th>
-                <th>Turno</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <div class="table-container">
+            <table id="pacienteTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Documento</th>
+                  <th>Tipo Examen</th>
+                  <th>Empresa</th>
+                  <th>Valor</th>
+                  <th>Consultorio</th>
+                  <th>Turno</th>
+                  <th>Estado</th>
+                  <th class="actions-cell">Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
 
           <div id="noPacienteData" style="display: none">Sin resultados.</div>
         </section>

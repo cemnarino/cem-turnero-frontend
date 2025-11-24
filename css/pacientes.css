@@ -64,7 +64,138 @@
   color: var(--muted);
 }
 
-/* Botones de acción en tabla de pacientes */
+/* Tabla responsive con scroll horizontal y columna fija */
+.table-container {
+  position: relative;
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+#pacienteTable {
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+/* Columna de acciones fija a la derecha */
+#pacienteTable .actions-cell {
+  position: sticky;
+  right: 0;
+  background: white;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+  z-index: 2;
+  min-width: 60px;
+  text-align: center;
+}
+
+#pacienteTable thead .actions-cell {
+  background: var(--input);
+  z-index: 3;
+}
+
+#pacienteTable tbody tr:hover .actions-cell {
+  background: var(--input);
+}
+
+/* Botón de menú (tres puntos) */
+.menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.menu-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.menu-btn i {
+  font-size: 20px;
+  color: #666;
+}
+
+/* Dropdown Menu Container */
+.dropdown-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-item:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.dropdown-item i {
+  font-size: 18px;
+  color: #666;
+}
+
+.dropdown-item.delete-item {
+  color: #dc3545;
+}
+
+.dropdown-item.delete-item:hover:not(:disabled) {
+  background: #fff5f5;
+}
+
+.dropdown-item.delete-item i {
+  color: #dc3545;
+}
+
+/* Botones de acción en tabla de pacientes (legacy) */
 #pacientes-view table .action-buttons {
   display: flex;
   gap: 0.25rem;
@@ -98,6 +229,75 @@
 
 #pacienteForm .form-row:last-child {
   margin-bottom: 0;
+}
+
+/* Modal para detalles del paciente */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.patient-details-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+.patient-details-modal h3 {
+  margin: 0 0 20px 0;
+  color: var(--primary);
+  font-size: 24px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.detail-row {
+  display: flex;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 10px;
+}
+
+.detail-row:last-of-type {
+  border-bottom: none;
+}
+
+.detail-row strong {
+  min-width: 150px;
+  color: #666;
+  font-weight: 600;
+}
+
+.patient-details-modal .btn-primary {
+  margin-top: 20px;
+  width: 100%;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 }
 
 #pacienteForm label {
