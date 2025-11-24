@@ -170,11 +170,15 @@ button {
   border: none;
   border-radius: var(--radius);
   font-weight: 500;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
+  min-height: 44px;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 button:hover {
@@ -313,8 +317,35 @@ table button[onclick*='Hide'] {
 
 .form-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.form-actions button {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Clases de botones específicas */
+.btn-primary {
+  background: #007bff;
+  color: white;
+  min-height: 44px;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  min-height: 44px;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
 }
 
 .no-consultorio,

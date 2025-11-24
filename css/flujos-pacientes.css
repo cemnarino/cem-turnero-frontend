@@ -189,10 +189,11 @@
 .form-header {
   margin: 0 0 35px 0;
   padding: 25px 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
+  border: 2px solid #e9ecef;
   border-radius: 12px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  color: #495057;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .form-header h2 {
@@ -201,16 +202,18 @@
   gap: 10px;
   margin: 0 0 10px 0;
   font-size: 24px;
+  color: #212529;
 }
 
 .form-header i {
   font-size: 32px;
+  color: #007bff;
 }
 
 .form-description {
   margin: 0;
   font-size: 14px;
-  opacity: 0.9;
+  color: #6c757d;
 }
 
 /* Fieldsets destacados */
@@ -298,8 +301,11 @@ fieldset.highlight legend {
 .btn-calendar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   white-space: nowrap;
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
 }
 
 /* Vista de check-in */
