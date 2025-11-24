@@ -79,11 +79,11 @@
             <i class="material-icons">more_vert</i>
           </button>
           <div class="dropdown-menu" id="menu-${p.id}">
-            <button class="dropdown-item" onclick="viewDetails(${p.id})">
+            <button class="dropdown-item" onclick="event.stopPropagation(); viewDetails(${p.id});">
               <i class="material-icons">visibility</i>
               Ver Detalles
             </button>
-            <button class="dropdown-item" onclick="editPac(${p.id})">
+            <button class="dropdown-item" onclick="event.stopPropagation(); editPac(${p.id});">
               <i class="material-icons">edit</i>
               Editar
             </button>
@@ -100,7 +100,7 @@
   function renderDeleteMenuItem(paciente) {
     // Solo permitir eliminar si el paciente está en espera (no en atención ni atendido)
     if (!paciente.en_atencion && !paciente.atendido) {
-      return `<button class="dropdown-item delete-item" onclick="deletePac(${paciente.id})">
+      return `<button class="dropdown-item delete-item" onclick="event.stopPropagation(); deletePac(${paciente.id});">
                 <i class="material-icons">delete</i>
                 Eliminar
               </button>`;
@@ -116,7 +116,9 @@
 
   // Función para toggle del menú dropdown
   window.toggleMenu = function(event, id) {
+    event.preventDefault();
     event.stopPropagation();
+    
     const button = event.currentTarget;
     const menu = document.getElementById(`menu-${id}`);
     const allMenus = document.querySelectorAll('.dropdown-menu');
@@ -150,7 +152,12 @@
   };
 
   // Cerrar menús al hacer click fuera
-  document.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
+    // No cerrar si el click fue en un botón de menú o dentro del menú
+    if (e.target.closest('.dropdown-menu') || e.target.closest('.menu-toggle')) {
+      return;
+    }
+    
     document.querySelectorAll('.dropdown-menu').forEach(menu => {
       menu.classList.remove('show');
     });
