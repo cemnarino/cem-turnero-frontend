@@ -28,7 +28,7 @@
     const filtered = rows.filter(
       (p) =>
         pacienteService.getNombreCompleto(p).toLowerCase().includes(term) ||
-        p.cedula.toString().includes(term)
+        (p.numero_documento || p.cedula || '').toString().includes(term)
     );
     render(filtered);
   }
@@ -39,7 +39,6 @@
     list.forEach((p) => {
       const tr = document.createElement('tr');
       const cons = consultorios[p.consultorio_id];
-      const actTurno = consultorios[p.consultorio_id]?.current_turn;
 
       // Usar el nuevo campo en_atencion del backend
       let badgeClass, badgeText;
@@ -154,7 +153,7 @@
   // Cerrar menús al hacer click fuera
   document.addEventListener('click', (e) => {
     // No cerrar si el click fue en un botón de menú o dentro del menú
-    if (e.target.closest('.dropdown-menu') || e.target.closest('.menu-toggle')) {
+    if (e.target.closest('.dropdown-menu') || e.target.closest('.menu-btn')) {
       return;
     }
     
@@ -195,9 +194,6 @@
       document.getElementById('paciente-detalle-view').style.display = 'none';
       document.getElementById('pacientes-view').style.display = 'block';
     };
-    
-    // Configurar tabs de la vista de detalles
-    setupDetailTabs();
   }
   
   // Llenar datos del paciente en la vista
@@ -205,49 +201,37 @@
     const cons = consultorios[p.consultorio_id];
     const nombreCompleto = pacienteService.getNombreCompleto(p);
     
-    // Header
+    // Información Personal
     document.getElementById('detalle-nombre').textContent = nombreCompleto;
-    document.getElementById('detalle-documento').textContent = `${p.tipo_documento} ${p.numero_documento || p.cedula}`;
+    document.getElementById('detalle-documento').textContent = p.numero_documento || p.cedula || 'N/A';
+    document.getElementById('detalle-tipo-doc').textContent = p.tipo_documento || 'N/A';
+    document.getElementById('detalle-contacto').textContent = p.contacto || 'N/A';
+    
+    // Seguridad Social
+    document.getElementById('detalle-eps').textContent = p.eps || 'N/A';
+    document.getElementById('detalle-afp').textContent = p.afp || 'N/A';
+    document.getElementById('detalle-arl').textContent = p.arl || 'N/A';
+    
+    // Información Laboral
+    document.getElementById('detalle-empresa').textContent = p.empresa || 'N/A';
+    document.getElementById('detalle-cargo').textContent = p.cargo || 'N/A';
+    document.getElementById('detalle-responsable').textContent = p.responsable_empresa || 'N/A';
+    
+    // Información de Consulta
+    document.getElementById('detalle-examen').textContent = p.tipo_examen || 'N/A';
+    document.getElementById('detalle-consultorio').textContent = cons ? cons.consultorio : 'N/A';
+    document.getElementById('detalle-turno').textContent = p.turno || 'Sin asignar';
+    document.getElementById('detalle-valor').textContent = `$${p.valor.toLocaleString('es-CO')}`;
+    document.getElementById('detalle-observacion').textContent = p.observacion || 'Sin observaciones';
     
     // Estado
     let estadoText = 'En Espera';
-    let estadoClass = 'badge-waiting';
     if (p.en_atencion) {
       estadoText = 'En Atención';
-      estadoClass = 'badge-in-progress';
     } else if (p.atendido) {
       estadoText = 'Atendido';
-      estadoClass = 'badge-completed';
     }
-    const estadoBadge = document.getElementById('detalle-estado');
-    estadoBadge.textContent = estadoText;
-    estadoBadge.className = `badge ${estadoClass}`;
-    
-    // Datos Personales
-    document.getElementById('info-tipo-doc').textContent = p.tipo_documento || 'N/A';
-    document.getElementById('info-num-doc').textContent = p.numero_documento || p.cedula || 'N/A';
-    document.getElementById('info-primer-nombre').textContent = p.primer_nombre || 'N/A';
-    document.getElementById('info-segundo-nombre').textContent = p.segundo_nombre || 'N/A';
-    document.getElementById('info-primer-apellido').textContent = p.primer_apellido || 'N/A';
-    document.getElementById('info-segundo-apellido').textContent = p.segundo_apellido || 'N/A';
-    document.getElementById('info-contacto').textContent = p.contacto || 'N/A';
-    
-    // Seguridad Social
-    document.getElementById('info-eps').textContent = p.eps || 'N/A';
-    document.getElementById('info-afp').textContent = p.afp || 'N/A';
-    document.getElementById('info-arl').textContent = p.arl || 'N/A';
-    
-    // Información Laboral
-    document.getElementById('info-empresa').textContent = p.empresa || 'N/A';
-    document.getElementById('info-cargo').textContent = p.cargo || 'N/A';
-    document.getElementById('info-responsable').textContent = p.responsable_empresa || 'N/A';
-    
-    // Visita Actual
-    document.getElementById('info-tipo-examen').textContent = p.tipo_examen || 'N/A';
-    document.getElementById('info-consultorio').textContent = cons ? cons.consultorio : 'N/A';
-    document.getElementById('info-turno').textContent = p.turno || 'Sin asignar';
-    document.getElementById('info-valor').textContent = `$${p.valor.toLocaleString('es-CO')}`;
-    document.getElementById('info-observacion').textContent = p.observacion || 'Sin observaciones';
+    document.getElementById('detalle-estado').textContent = estadoText;
     
     // Llenar historial
     fillHistorial(p, historial);
@@ -255,89 +239,38 @@
   
   // Llenar historial en la vista de detalles
   function fillHistorial(currentPatient, historial) {
-    const container = document.getElementById('historial-container');
+    const tbody = document.getElementById('historial-tbody');
+    const noHistorial = document.getElementById('no-historial');
+    const table = document.getElementById('historial-table');
     
-    if (historial.length === 0) {
-      container.innerHTML = '<p class="no-history">No hay historial previo de visitas.</p>';
+    if (!historial || historial.length === 0) {
+      table.style.display = 'none';
+      noHistorial.style.display = 'block';
       return;
     }
     
-    const historialHTML = `
-      <h3 class="historial-title">
-        <i class="material-icons">history</i>
-        Historial de Visitas (${historial.length})
-      </h3>
-      <div class="history-timeline">
-        ${historial.map((visit, index) => {
-          const visitCons = consultorios[visit.consultorio_id];
-          const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : new Date());
-          const isCurrentVisit = visit.id === currentPatient.id;
-          
-          return `
-            <div class="timeline-item ${isCurrentVisit ? 'current-visit' : ''}">
-              <div class="timeline-marker">
-                <span class="visit-number">#${historial.length - index}</span>
-              </div>
-              <div class="timeline-content">
-                <div class="timeline-header">
-                  <div class="timeline-date">
-                    <i class="material-icons">event</i>
-                    ${visitDate.toLocaleDateString('es-CO', { 
-                      weekday: 'long',
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                  ${isCurrentVisit ? '<span class="current-visit-badge">Visita Actual</span>' : ''}
-                </div>
-                <div class="timeline-body">
-                  <div class="timeline-detail">
-                    <strong>Consultorio:</strong> ${visitCons ? visitCons.consultorio : 'N/A'}
-                  </div>
-                  <div class="timeline-detail">
-                    <strong>Tipo de Examen:</strong> ${visit.tipo_examen}
-                  </div>
-                  <div class="timeline-detail">
-                    <strong>Empresa:</strong> ${visit.empresa || 'N/A'}
-                  </div>
-                  <div class="timeline-detail">
-                    <strong>Valor:</strong> $${visit.valor.toLocaleString('es-CO')}
-                  </div>
-                  ${visit.observacion ? `
-                    <div class="timeline-detail full">
-                      <strong>Observación:</strong> ${visit.observacion}
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+    table.style.display = 'table';
+    noHistorial.style.display = 'none';
     
-    container.innerHTML = historialHTML;
-  }
-  
-  // Configurar tabs de la vista de detalles
-  function setupDetailTabs() {
-    const tabBtns = document.querySelectorAll('.detail-tab');
-    const tabContents = document.querySelectorAll('.detail-tab-content');
-    
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetTab = btn.dataset.detailTab;
-        
-        // Remover active de todos
-        tabBtns.forEach(b => b.classList.remove('active'));
-        tabContents.forEach(c => c.classList.remove('active'));
-        
-        // Activar el seleccionado
-        btn.classList.add('active');
-        document.getElementById(`detail-${targetTab}-tab`).classList.add('active');
-      });
-    });
+    tbody.innerHTML = historial.map(visit => {
+      const visitCons = consultorios[visit.consultorio_id];
+      const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : null);
+      const isCurrentVisit = visit.id === currentPatient.id;
+      
+      let estadoText = 'En Espera';
+      if (visit.en_atencion) estadoText = 'En Atención';
+      else if (visit.atendido) estadoText = 'Atendido';
+      
+      return `
+        <tr class="${isCurrentVisit ? 'current-visit' : ''}">
+          <td>${visitDate ? visitDate.toLocaleDateString('es-CO') + ' ' + visitDate.toLocaleTimeString('es-CO', {hour: '2-digit', minute: '2-digit'}) : 'N/A'}</td>
+          <td>${visit.tipo_examen || 'N/A'}</td>
+          <td>${visitCons ? visitCons.consultorio : 'N/A'}</td>
+          <td><span class="chip ${estadoText.toLowerCase().replace(' ', '-')}">${estadoText}</span></td>
+          <td>${visit.observacion || 'Sin observaciones'}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // Función para obtener historial del paciente
@@ -361,244 +294,6 @@
       return [];
     }
   }
-
-  // Función para mostrar detalles completos del paciente con historial
-  function showPatientDetails(p, historial = []) {
-    const cons = consultorios[p.consultorio_id];
-    const nombreCompleto = pacienteService.getNombreCompleto(p);
-    
-    // Estado actual del paciente
-    let estadoActual = 'En Espera';
-    let estadoClass = 'status-waiting';
-    if (p.en_atencion) {
-      estadoActual = 'En Atención';
-      estadoClass = 'status-in-progress';
-    } else if (p.atendido) {
-      estadoActual = 'Atendido';
-      estadoClass = 'status-completed';
-    }
-
-    // Generar HTML del historial
-    const historialHTML = historial.length > 0 ? `
-      <div class="patient-history">
-        <h4>
-          <i class="material-icons">history</i>
-          Historial de Visitas (${historial.length})
-        </h4>
-        <div class="history-list">
-          ${historial.map((visit, index) => {
-            const visitCons = consultorios[visit.consultorio_id];
-            const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : new Date());
-            const isCurrentVisit = visit.id === p.id;
-            
-            return `
-              <div class="history-item ${isCurrentVisit ? 'current-visit' : ''}">
-                <div class="history-header">
-                  <span class="history-number">#${historial.length - index}</span>
-                  <span class="history-date">
-                    <i class="material-icons">calendar_today</i>
-                    ${visitDate.toLocaleDateString('es-CO', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </span>
-                  ${isCurrentVisit ? '<span class="current-badge">Visita Actual</span>' : ''}
-                </div>
-                <div class="history-body">
-                  <div class="history-detail">
-                    <strong>Consultorio:</strong> ${visitCons ? visitCons.consultorio : 'N/A'}
-                  </div>
-                  <div class="history-detail">
-                    <strong>Tipo de Examen:</strong> ${visit.tipo_examen}
-                  </div>
-                  <div class="history-detail">
-                    <strong>Empresa:</strong> ${visit.empresa || 'N/A'}
-                  </div>
-                  <div class="history-detail">
-                    <strong>Valor:</strong> $${visit.valor.toLocaleString('es-CO')}
-                  </div>
-                  ${visit.observacion ? `
-                    <div class="history-detail">
-                      <strong>Observación:</strong> ${visit.observacion}
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    ` : '<p class="no-history">No hay historial previo de visitas.</p>';
-    
-    const details = `
-      <div class="patient-details-modal">
-        <div class="modal-header">
-          <div>
-            <h3>
-              <i class="material-icons">person</i>
-              ${nombreCompleto}
-            </h3>
-            <span class="patient-status ${estadoClass}">${estadoActual}</span>
-          </div>
-          <button class="close-btn" onclick="closeModal()" aria-label="Cerrar">
-            <i class="material-icons">close</i>
-          </button>
-        </div>
-
-        <div class="tabs-container">
-          <div class="tabs-header">
-            <button class="tab-btn active" data-tab="info">
-              <i class="material-icons">info</i>
-              Información
-            </button>
-            <button class="tab-btn" data-tab="history">
-              <i class="material-icons">history</i>
-              Historial
-            </button>
-          </div>
-
-          <div class="tab-content active" id="info-tab">
-            <div class="info-section">
-              <h4>
-                <i class="material-icons">badge</i>
-                Datos Personales
-              </h4>
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <span class="detail-label">Tipo Documento</span>
-                  <span class="detail-value">${p.tipo_documento}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Número Documento</span>
-                  <span class="detail-value">${p.numero_documento || p.cedula}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Contacto</span>
-                  <span class="detail-value">${p.contacto || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>
-                <i class="material-icons">health_and_safety</i>
-                Seguridad Social
-              </h4>
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <span class="detail-label">EPS</span>
-                  <span class="detail-value">${p.eps || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">AFP</span>
-                  <span class="detail-value">${p.afp || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">ARL</span>
-                  <span class="detail-value">${p.arl || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>
-                <i class="material-icons">business</i>
-                Información Laboral
-              </h4>
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <span class="detail-label">Empresa</span>
-                  <span class="detail-value">${p.empresa}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Cargo</span>
-                  <span class="detail-value">${p.cargo || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Responsable</span>
-                  <span class="detail-value">${p.responsable_empresa || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>
-                <i class="material-icons">medical_services</i>
-                Información de la Visita
-              </h4>
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <span class="detail-label">Tipo de Examen</span>
-                  <span class="detail-value">${p.tipo_examen}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Consultorio</span>
-                  <span class="detail-value">${cons ? cons.consultorio : 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Turno</span>
-                  <span class="detail-value">${p.turno || '—'}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Valor</span>
-                  <span class="detail-value">$${p.valor.toLocaleString('es-CO')}</span>
-                </div>
-              </div>
-              ${p.observacion ? `
-                <div class="detail-item full-width">
-                  <span class="detail-label">Observación</span>
-                  <span class="detail-value">${p.observacion}</span>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <div class="tab-content" id="history-tab">
-            ${historialHTML}
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-secondary" onclick="closeModal()">
-            <i class="material-icons">close</i>
-            Cerrar
-          </button>
-        </div>
-      </div>
-    `;
-    
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = details;
-    modal.onclick = (e) => {
-      if (e.target === modal) closeModal();
-    };
-    
-    // Event listeners para las pestañas
-    setTimeout(() => {
-      const tabBtns = modal.querySelectorAll('.tab-btn');
-      const tabContents = modal.querySelectorAll('.tab-content');
-      
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetTab = btn.dataset.tab;
-          
-          tabBtns.forEach(b => b.classList.remove('active'));
-          tabContents.forEach(c => c.classList.remove('active'));
-          
-          btn.classList.add('active');
-          document.getElementById(`${targetTab}-tab`).classList.add('active');
-        });
-      });
-    }, 0);
-    
-    document.body.appendChild(modal);
-  };
-
-  window.closeModal = function() {
-    document.querySelector('.modal-overlay')?.remove();
-  };
 
   window.editPac = async (id) => {
     console.log('✏️ Editar llamado con ID:', id);
@@ -655,7 +350,7 @@
       }
 
       // Proceder con la eliminación
-      await pacienteService.delete(id);
+      await pacienteService.hide(id); // Usamos hide porque no hay delete en el servicio
       showToast('Paciente eliminado correctamente');
 
       // Actualizar todas las vistas relacionadas

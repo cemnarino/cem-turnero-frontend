@@ -675,6 +675,135 @@
         </section>
       </section>
 
+      <!-- ====== VISTA DE DETALLES DEL PACIENTE ====== -->
+      <section id="paciente-detalle-view" class="view" style="display: none;">
+        <div class="detalle-header">
+          <button id="btnVolverListado" class="btn-back">
+            <i class="material-icons">arrow_back</i>
+            Volver al Listado
+          </button>
+          <h1>Detalles del Paciente</h1>
+        </div>
+
+        <div class="detalle-container">
+          <!-- Información Principal -->
+          <div class="detalle-card">
+            <h2><i class="material-icons">person</i> Información Personal</h2>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <strong>Documento:</strong>
+                <span id="detalle-documento"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Tipo:</strong>
+                <span id="detalle-tipo-doc"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Nombre Completo:</strong>
+                <span id="detalle-nombre"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Contacto:</strong>
+                <span id="detalle-contacto"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seguridad Social -->
+          <div class="detalle-card">
+            <h2><i class="material-icons">health_and_safety</i> Seguridad Social</h2>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <strong>EPS:</strong>
+                <span id="detalle-eps"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>AFP:</strong>
+                <span id="detalle-afp"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>ARL:</strong>
+                <span id="detalle-arl"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información Laboral -->
+          <div class="detalle-card">
+            <h2><i class="material-icons">business</i> Información Laboral</h2>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <strong>Empresa:</strong>
+                <span id="detalle-empresa"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Cargo:</strong>
+                <span id="detalle-cargo"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Responsable:</strong>
+                <span id="detalle-responsable"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de la Consulta -->
+          <div class="detalle-card">
+            <h2><i class="material-icons">medical_services</i> Información de Consulta</h2>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <strong>Tipo de Examen:</strong>
+                <span id="detalle-examen"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Consultorio:</strong>
+                <span id="detalle-consultorio"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Turno:</strong>
+                <span id="detalle-turno"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Valor:</strong>
+                <span id="detalle-valor"></span>
+              </div>
+              <div class="detalle-item">
+                <strong>Estado:</strong>
+                <span id="detalle-estado"></span>
+              </div>
+              <div class="detalle-item full-width">
+                <strong>Observación:</strong>
+                <span id="detalle-observacion"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historial de Visitas -->
+          <div class="detalle-card">
+            <h2><i class="material-icons">history</i> Historial de Visitas</h2>
+            <div class="historial-container">
+              <table id="historial-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tipo Examen</th>
+                    <th>Consultorio</th>
+                    <th>Estado</th>
+                    <th>Observación</th>
+                  </tr>
+                </thead>
+                <tbody id="historial-tbody">
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+              <div id="no-historial" style="display: none;">
+                <p>No hay registros anteriores para este paciente</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ====== TURNOS ====== -->
       <section id="turnos-view" class="view">
         <h1>Gestión de Turnos</h1>
