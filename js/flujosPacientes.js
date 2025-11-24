@@ -6,31 +6,50 @@
   
   // Inicializar
   function init() {
-    setupFlujoBotones();
-    setupWalkinForm();
-    setupAgendarForm();
-    setupCheckinView();
-    
-    // Establecer fecha de hoy en check-in
-    const hoy = new Date().toISOString().split('T')[0];
-    const checkinFecha = document.getElementById('checkin-fecha');
-    if (checkinFecha) {
-      checkinFecha.value = hoy;
+    try {
+      // Verificar que los elementos existen antes de inicializar
+      const pacientesView = document.getElementById('pacientes-view');
+      if (!pacientesView) {
+        console.warn('⚠️ Vista de pacientes no encontrada, omitiendo inicialización de flujos');
+        return;
+      }
+      
+      setupFlujoBotones();
+      setupWalkinForm();
+      setupAgendarForm();
+      setupCheckinView();
+      
+      // Establecer fecha de hoy en check-in
+      const hoy = new Date().toISOString().split('T')[0];
+      const checkinFecha = document.getElementById('checkin-fecha');
+      if (checkinFecha) {
+        checkinFecha.value = hoy;
+      }
+      
+      console.log('✅ Sistema de flujos de pacientes inicializado');
+    } catch (error) {
+      console.error('❌ Error al inicializar flujos de pacientes:', error);
     }
-    
-    console.log('✅ Sistema de flujos de pacientes inicializado');
   }
   
   // Configurar botones de selección de flujo
   function setupFlujoBotones() {
-    const botones = document.querySelectorAll('.flujo-btn');
-    
-    botones.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const flujo = btn.dataset.flujo;
-        cambiarFlujo(flujo);
+    try {
+      const botones = document.querySelectorAll('.flujo-btn');
+      if (botones.length === 0) {
+        console.warn('⚠️ No se encontraron botones de flujo');
+        return;
+      }
+      
+      botones.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const flujo = btn.dataset.flujo;
+          cambiarFlujo(flujo);
+        });
       });
-    });
+    } catch (error) {
+      console.error('❌ Error en setupFlujoBotones:', error);
+    }
   }
   
   // Cambiar entre flujos
@@ -57,61 +76,72 @@
   
   // ========== WALK-IN ==========
   function setupWalkinForm() {
-    const form = document.getElementById('walkinForm');
-    if (!form) return;
-    
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    try {
+      const form = document.getElementById('walkinForm');
+      if (!form) {
+        console.warn('⚠️ Formulario walk-in no encontrado');
+        return;
+      }
       
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-      
-      // Limpiar campos opcionales vacíos
-      Object.keys(data).forEach(key => {
-        if (data[key] === '' || data[key] === null) {
-          data[key] = null;
-        }
-      });
-      
-      // Convertir consultorio_id a número
-      data.consultorio_id = parseInt(data.consultorio_id);
-      
-      // Convertir valor a número
-      data.valor = parseFloat(data.valor) || 0;
-      
-      console.log('🚶 Registrando walk-in:', data);
-      
-      try {
-        const response = await fetch(`${API_URLS.base}/pacientes/walk-in`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Limpiar campos opcionales vacíos
+        Object.keys(data).forEach(key => {
+          if (data[key] === '' || data[key] === null) {
+            data[key] = null;
+          }
         });
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        // Convertir consultorio_id a número
+        data.consultorio_id = parseInt(data.consultorio_id);
+        
+        // Convertir valor a número
+        data.valor = parseFloat(data.valor) || 0;
+        
+        console.log('🚶 Registrando walk-in:', data);
+        
+        try {
+          const response = await fetch(`${API_URLS.base}/pacientes/walk-in`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const paciente = await response.json();
+          
+          showToast(`✅ Turno ${paciente.turno} asignado a ${paciente.primer_nombre} ${paciente.primer_apellido}`, 'success');
+          form.reset();
+          
+          // Recargar lista de pacientes si existe
+          if (typeof eventBus !== 'undefined') {
+            eventBus.emit('refresh-pacientes');
+          }
+        } catch (error) {
+          console.error('Error en walk-in:', error);
+          showToast('❌ Error al registrar paciente walk-in', 'error');
         }
-        
-        const paciente = await response.json();
-        
-        showToast(`✅ Turno ${paciente.turno} asignado a ${paciente.primer_nombre} ${paciente.primer_apellido}`, 'success');
-        form.reset();
-        
-        // Recargar lista de pacientes si existe
-        if (typeof eventBus !== 'undefined') {
-          eventBus.emit('refresh-pacientes');
-        }
-      } catch (error) {
-        console.error('Error en walk-in:', error);
-        showToast('❌ Error al registrar paciente walk-in', 'error');
-      }
-    });
+      });
+    } catch (error) {
+      console.error('❌ Error en setupWalkinForm:', error);
+    }
   }
   
   // ========== AGENDAR ==========
   function setupAgendarForm() {
-    const form = document.getElementById('agendarForm');
-    if (!form) return;
+    try {
+      const form = document.getElementById('agendarForm');
+      if (!form) {
+        console.warn('⚠️ Formulario agendar no encontrado');
+        return;
+      }
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -166,18 +196,22 @@
         showToast('❌ Error al agendar cita', 'error');
       }
     });
+    } catch (error) {
+      console.error('❌ Error en setupAgendarForm:', error);
+    }
   }
   
   // ========== CHECK-IN ==========
   function setupCheckinView() {
-    const btnActualizar = document.querySelector('#checkinView button[onclick*="cargarCitasPendientes"]');
-    if (btnActualizar) {
-      btnActualizar.removeAttribute('onclick');
-      btnActualizar.addEventListener('click', cargarCitasPendientes);
-    }
-    
-    const checkinFecha = document.getElementById('checkin-fecha');
-    const checkinConsultorio = document.getElementById('checkin-consultorio');
+    try {
+      const btnActualizar = document.querySelector('#checkinView button[onclick*="cargarCitasPendientes"]');
+      if (btnActualizar) {
+        btnActualizar.removeAttribute('onclick');
+        btnActualizar.addEventListener('click', cargarCitasPendientes);
+      }
+      
+      const checkinFecha = document.getElementById('checkin-fecha');
+      const checkinConsultorio = document.getElementById('checkin-consultorio');
     
     if (checkinFecha) {
       checkinFecha.addEventListener('change', cargarCitasPendientes);
@@ -185,6 +219,9 @@
     
     if (checkinConsultorio) {
       checkinConsultorio.addEventListener('change', cargarCitasPendientes);
+    }
+    } catch (error) {
+      console.error('❌ Error en setupCheckinView:', error);
     }
   }
   
@@ -375,41 +412,45 @@
     }
   }
   
-  // Inicializar solo cuando se activa la pestaña de pacientes
-  function inicializarCuandoSeaNecesario() {
-    // Solo inicializar si estamos en la vista de pacientes
+  // Inicializar solo cuando la pestaña de pacientes está activa
+  let yaInicializado = false;
+  
+  function inicializarSiEsNecesario() {
+    // Solo inicializar una vez y si estamos en pacientes
     const pacientesView = document.getElementById('pacientes-view');
-    if (pacientesView && pacientesView.classList.contains('active')) {
+    if (!yaInicializado && pacientesView) {
       init();
       cargarConsultorios();
+      yaInicializado = true;
+      console.log('✅ Flujos de pacientes inicializado');
     }
   }
   
-  // Escuchar evento de cambio de pestaña
+  // Escuchar cambios de pestaña
   if (typeof eventBus !== 'undefined') {
     eventBus.on('tab-changed', (tabId) => {
       if (tabId === 'pacientes-view') {
-        inicializarCuandoSeaNecesario();
+        inicializarSiEsNecesario();
+      }
+    });
+    
+    // También escuchar refresh de pacientes
+    eventBus.on('refresh-pacientes', () => {
+      inicializarSiEsNecesario();
+      if (flujoActual === 'checkin') {
+        cargarCitasPendientes();
       }
     });
   }
   
-  // También inicializar si ya estamos en la pestaña al cargar
+  // Inicializar cuando el DOM esté listo
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarCuandoSeaNecesario);
-  } else {
-    inicializarCuandoSeaNecesario();
-  }
-  
-  // Escuchar evento de cambio de vista
-  if (typeof eventBus !== 'undefined') {
-    eventBus.on('view-changed', (viewId) => {
-      if (viewId === 'pacientes-view') {
-        cargarConsultorios();
-        if (flujoActual === 'checkin') {
-          cargarCitasPendientes();
-        }
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      // Solo si ya estamos en pacientes
+      setTimeout(inicializarSiEsNecesario, 100);
     });
+  } else {
+    // DOM ya está listo
+    setTimeout(inicializarSiEsNecesario, 100);
   }
 })();
