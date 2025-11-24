@@ -1133,6 +1133,7 @@
 
     <script src="js/router.js"></script>
     <script src="js/flujosPacientes.js"></script>
+    <script src="js/pacienteSearch.js"></script>
 
     <script>
       function showToast(msg) {
@@ -1143,5 +1144,36 @@
         setTimeout(() => t.remove(), 3000);
       }
     </script>
+    
+    <style>
+      /* Botón de búsqueda */
+      .btn-search {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 44px;
+        height: 44px;
+      }
+      
+      .btn-search:hover {
+        background: #2563eb;
+        transform: scale(1.05);
+      }
+      
+      .btn-search:active {
+        transform: scale(0.95);
+      }
+      
+      .btn-search .material-icons {
+        font-size: 20px;
+      }
+    </style>
   </body>
 </html>

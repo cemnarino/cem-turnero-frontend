@@ -102,31 +102,73 @@
         // Convertir valor a número
         data.valor = parseFloat(data.valor) || 0;
         
-        console.log('🚶 Registrando walk-in:', data);
+        // Verificar si estamos editando
+        const editingId = form.dataset.editingId;
         
-        try {
-          const response = await fetch(`${API_URLS.base}/pacientes/walk-in`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
+        if (editingId) {
+          // MODO EDICIÓN
+          console.log(`✏️ Actualizando paciente ${editingId}:`, data);
           
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+          try {
+            const response = await fetch(`${API_URLS.base}/pacientes/${editingId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const paciente = await response.json();
+            
+            showToast(`✅ Paciente actualizado: ${paciente.primer_nombre} ${paciente.primer_apellido}`, 'success');
+            
+            // Limpiar modo edición
+            delete form.dataset.editingId;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+              submitBtn.innerHTML = '<i class="material-icons">person_add</i> Registrar Walk-In';
+            }
+            
+            form.reset();
+            
+            // Recargar lista de pacientes
+            if (typeof eventBus !== 'undefined') {
+              eventBus.emit('refresh-pacientes');
+            }
+          } catch (error) {
+            console.error('Error al actualizar:', error);
+            showToast('❌ Error al actualizar paciente', 'error');
           }
+        } else {
+          // MODO CREACIÓN
+          console.log('🚶 Registrando walk-in:', data);
           
-          const paciente = await response.json();
-          
-          showToast(`✅ Turno ${paciente.turno} asignado a ${paciente.primer_nombre} ${paciente.primer_apellido}`, 'success');
-          form.reset();
-          
-          // Recargar lista de pacientes si existe
-          if (typeof eventBus !== 'undefined') {
-            eventBus.emit('refresh-pacientes');
+          try {
+            const response = await fetch(`${API_URLS.base}/pacientes/walk-in`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const paciente = await response.json();
+            
+            showToast(`✅ Turno ${paciente.turno} asignado a ${paciente.primer_nombre} ${paciente.primer_apellido}`, 'success');
+            form.reset();
+            
+            // Recargar lista de pacientes si existe
+            if (typeof eventBus !== 'undefined') {
+              eventBus.emit('refresh-pacientes');
+            }
+          } catch (error) {
+            console.error('Error en walk-in:', error);
+            showToast('❌ Error al registrar paciente walk-in', 'error');
           }
-        } catch (error) {
-          console.error('Error en walk-in:', error);
-          showToast('❌ Error al registrar paciente walk-in', 'error');
         }
       });
     } catch (error) {
@@ -169,31 +211,78 @@
       data.consultorio_id = parseInt(data.consultorio_id);
       data.valor = parseFloat(data.valor) || 0;
       
-      console.log('📅 Agendando cita:', data);
+      // Verificar si estamos editando
+      const editingId = form.dataset.editingId;
       
-      try {
-        const response = await fetch(`${API_URLS.base}/pacientes/agendar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+      if (editingId) {
+        // MODO EDICIÓN
+        console.log(`✏️ Actualizando cita ${editingId}:`, data);
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        try {
+          const response = await fetch(`${API_URLS.base}/pacientes/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const paciente = await response.json();
+          
+          const fechaCita = new Date(paciente.hora_agendada).toLocaleString('es-CO', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          });
+          
+          showToast(`✅ Cita actualizada para ${fechaCita}`, 'success');
+          
+          // Limpiar modo edición
+          delete form.dataset.editingId;
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.innerHTML = '<i class="material-icons">event</i> Agendar Cita';
+          }
+          
+          form.reset();
+          
+          // Recargar lista de pacientes
+          if (typeof eventBus !== 'undefined') {
+            eventBus.emit('refresh-pacientes');
+          }
+        } catch (error) {
+          console.error('Error al actualizar cita:', error);
+          showToast('❌ Error al actualizar cita', 'error');
         }
+      } else {
+        // MODO CREACIÓN
+        console.log('📅 Agendando cita:', data);
         
-        const paciente = await response.json();
-        
-        const fechaCita = new Date(paciente.hora_agendada).toLocaleString('es-CO', {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        });
-        
-        showToast(`✅ Cita agendada para ${fechaCita}`, 'success');
-        form.reset();
-      } catch (error) {
-        console.error('Error al agendar:', error);
-        showToast('❌ Error al agendar cita', 'error');
+        try {
+          const response = await fetch(`${API_URLS.base}/pacientes/agendar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const paciente = await response.json();
+          
+          const fechaCita = new Date(paciente.hora_agendada).toLocaleString('es-CO', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          });
+          
+          showToast(`✅ Cita agendada para ${fechaCita}`, 'success');
+          form.reset();
+        } catch (error) {
+          console.error('Error al agendar:', error);
+          showToast('❌ Error al agendar cita', 'error');
+        }
       }
     });
     } catch (error) {

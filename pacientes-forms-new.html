@@ -45,13 +45,20 @@
         <div class="form-row">
           <label>
             <span class="label-text">Número de Documento<span class="required">*</span></span>
-            <input
-              type="text"
-              name="numero_documento"
-              required
-              placeholder="Ej: 123456789"
-              minlength="6"
-              maxlength="15" />
+            <div style="display: flex; gap: 8px;">
+              <input
+                type="text"
+                name="numero_documento"
+                id="walkin-numero-documento"
+                required
+                placeholder="Ej: 123456789"
+                minlength="6"
+                maxlength="15"
+                style="flex: 1;" />
+              <button type="button" class="btn-search" onclick="buscarPacienteWalkin()" title="Buscar paciente existente">
+                <i class="material-icons">search</i>
+              </button>
+            </div>
           </label>
 
           <label>
@@ -240,13 +247,20 @@
         <div class="form-row">
           <label>
             <span class="label-text">Número de Documento<span class="required">*</span></span>
-            <input
-              type="text"
-              name="numero_documento"
-              required
-              placeholder="Ej: 123456789"
-              minlength="6"
-              maxlength="15" />
+            <div style="display: flex; gap: 8px;">
+              <input
+                type="text"
+                name="numero_documento"
+                id="agendar-numero-documento"
+                required
+                placeholder="Ej: 123456789"
+                minlength="6"
+                maxlength="15"
+                style="flex: 1;" />
+              <button type="button" class="btn-search" onclick="buscarPacienteAgendar()" title="Buscar paciente existente">
+                <i class="material-icons">search</i>
+              </button>
+            </div>
           </label>
           <label>
             <span class="label-text">Tipo de Documento</span>
