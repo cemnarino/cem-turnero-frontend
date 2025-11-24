@@ -156,38 +156,239 @@
     });
   });
 
-  // Función para ver detalles
+  // Función para ver detalles con historial
   window.viewDetails = async (id) => {
     try {
       const p = await pacienteService.get(id);
-      showPatientDetails(p);
+      // Obtener historial del paciente por documento
+      const historial = await fetchPatientHistory(p.numero_documento || p.cedula);
+      showPatientDetails(p, historial);
     } catch (error) {
+      console.error('Error al cargar detalles:', error);
       showToast('Error al cargar detalles del paciente');
     }
   };
 
-  // Función para mostrar detalles del paciente (puedes personalizar esto)
-  function showPatientDetails(p) {
+  // Función para obtener historial del paciente
+  async function fetchPatientHistory(documento) {
+    try {
+      const response = await fetch(`${CONFIG.SERVER.HTTP_BASE_URL}/pacientes/`);
+      const allPatients = await response.json();
+      
+      // Filtrar todas las visitas del paciente por documento
+      return allPatients.filter(pac => 
+        (pac.numero_documento === documento || pac.cedula === documento) &&
+        pac.is_visible
+      ).sort((a, b) => new Date(b.hora_entrada) - new Date(a.hora_entrada));
+    } catch (error) {
+      console.error('Error al obtener historial:', error);
+      return [];
+    }
+  }
+
+  // Función para mostrar detalles completos del paciente con historial
+  function showPatientDetails(p, historial = []) {
     const cons = consultorios[p.consultorio_id];
+    const nombreCompleto = pacienteService.getNombreCompleto(p);
+    
+    // Estado actual del paciente
+    let estadoActual = 'En Espera';
+    let estadoClass = 'status-waiting';
+    if (p.en_atencion) {
+      estadoActual = 'En Atención';
+      estadoClass = 'status-in-progress';
+    } else if (p.atendido) {
+      estadoActual = 'Atendido';
+      estadoClass = 'status-completed';
+    }
+
+    // Generar HTML del historial
+    const historialHTML = historial.length > 0 ? `
+      <div class="patient-history">
+        <h4>
+          <i class="material-icons">history</i>
+          Historial de Visitas (${historial.length})
+        </h4>
+        <div class="history-list">
+          ${historial.map((visit, index) => {
+            const visitCons = consultorios[visit.consultorio_id];
+            const visitDate = new Date(visit.hora_entrada);
+            const isCurrentVisit = visit.id === p.id;
+            
+            return `
+              <div class="history-item ${isCurrentVisit ? 'current-visit' : ''}">
+                <div class="history-header">
+                  <span class="history-number">#${historial.length - index}</span>
+                  <span class="history-date">
+                    <i class="material-icons">calendar_today</i>
+                    ${visitDate.toLocaleDateString('es-CO', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                  ${isCurrentVisit ? '<span class="current-badge">Visita Actual</span>' : ''}
+                </div>
+                <div class="history-body">
+                  <div class="history-detail">
+                    <strong>Consultorio:</strong> ${visitCons ? visitCons.consultorio : 'N/A'}
+                  </div>
+                  <div class="history-detail">
+                    <strong>Tipo de Examen:</strong> ${visit.tipo_examen}
+                  </div>
+                  <div class="history-detail">
+                    <strong>Empresa:</strong> ${visit.empresa || 'N/A'}
+                  </div>
+                  <div class="history-detail">
+                    <strong>Valor:</strong> $${visit.valor.toLocaleString('es-CO')}
+                  </div>
+                  ${visit.observacion ? `
+                    <div class="history-detail">
+                      <strong>Observación:</strong> ${visit.observacion}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    ` : '<p class="no-history">No hay historial previo de visitas.</p>';
+    
     const details = `
       <div class="patient-details-modal">
-        <h3>Detalles del Paciente</h3>
-        <div class="detail-row"><strong>ID:</strong> ${p.id}</div>
-        <div class="detail-row"><strong>Nombre:</strong> ${pacienteService.getNombreCompleto(p)}</div>
-        <div class="detail-row"><strong>Documento:</strong> ${p.numero_documento || p.cedula}</div>
-        <div class="detail-row"><strong>Tipo Documento:</strong> ${p.tipo_documento}</div>
-        <div class="detail-row"><strong>Contacto:</strong> ${p.contacto || 'N/A'}</div>
-        <div class="detail-row"><strong>EPS:</strong> ${p.eps || 'N/A'}</div>
-        <div class="detail-row"><strong>AFP:</strong> ${p.afp || 'N/A'}</div>
-        <div class="detail-row"><strong>ARL:</strong> ${p.arl || 'N/A'}</div>
-        <div class="detail-row"><strong>Empresa:</strong> ${p.empresa}</div>
-        <div class="detail-row"><strong>Cargo:</strong> ${p.cargo || 'N/A'}</div>
-        <div class="detail-row"><strong>Tipo Examen:</strong> ${p.tipo_examen}</div>
-        <div class="detail-row"><strong>Valor:</strong> $${p.valor.toLocaleString('es-CO')}</div>
-        <div class="detail-row"><strong>Consultorio:</strong> ${cons ? cons.consultorio : 'N/A'}</div>
-        <div class="detail-row"><strong>Turno:</strong> ${p.turno || '—'}</div>
-        <div class="detail-row"><strong>Observación:</strong> ${p.observacion || 'N/A'}</div>
-        <button class="btn-primary" onclick="closeModal()">Cerrar</button>
+        <div class="modal-header">
+          <div>
+            <h3>
+              <i class="material-icons">person</i>
+              ${nombreCompleto}
+            </h3>
+            <span class="patient-status ${estadoClass}">${estadoActual}</span>
+          </div>
+          <button class="close-btn" onclick="closeModal()" aria-label="Cerrar">
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="info">
+              <i class="material-icons">info</i>
+              Información
+            </button>
+            <button class="tab-btn" data-tab="history">
+              <i class="material-icons">history</i>
+              Historial
+            </button>
+          </div>
+
+          <div class="tab-content active" id="info-tab">
+            <div class="info-section">
+              <h4>
+                <i class="material-icons">badge</i>
+                Datos Personales
+              </h4>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Tipo Documento</span>
+                  <span class="detail-value">${p.tipo_documento}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Número Documento</span>
+                  <span class="detail-value">${p.numero_documento || p.cedula}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Contacto</span>
+                  <span class="detail-value">${p.contacto || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h4>
+                <i class="material-icons">health_and_safety</i>
+                Seguridad Social
+              </h4>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">EPS</span>
+                  <span class="detail-value">${p.eps || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">AFP</span>
+                  <span class="detail-value">${p.afp || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">ARL</span>
+                  <span class="detail-value">${p.arl || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h4>
+                <i class="material-icons">business</i>
+                Información Laboral
+              </h4>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Empresa</span>
+                  <span class="detail-value">${p.empresa}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Cargo</span>
+                  <span class="detail-value">${p.cargo || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Responsable</span>
+                  <span class="detail-value">${p.responsable_empresa || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h4>
+                <i class="material-icons">medical_services</i>
+                Información de la Visita
+              </h4>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Tipo de Examen</span>
+                  <span class="detail-value">${p.tipo_examen}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Consultorio</span>
+                  <span class="detail-value">${cons ? cons.consultorio : 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Turno</span>
+                  <span class="detail-value">${p.turno || '—'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Valor</span>
+                  <span class="detail-value">$${p.valor.toLocaleString('es-CO')}</span>
+                </div>
+              </div>
+              ${p.observacion ? `
+                <div class="detail-item full-width">
+                  <span class="detail-label">Observación</span>
+                  <span class="detail-value">${p.observacion}</span>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="tab-content" id="history-tab">
+            ${historialHTML}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal()">
+            <i class="material-icons">close</i>
+            Cerrar
+          </button>
+        </div>
       </div>
     `;
     
@@ -197,6 +398,25 @@
     modal.onclick = (e) => {
       if (e.target === modal) closeModal();
     };
+    
+    // Event listeners para las pestañas
+    setTimeout(() => {
+      const tabBtns = modal.querySelectorAll('.tab-btn');
+      const tabContents = modal.querySelectorAll('.tab-content');
+      
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTab = btn.dataset.tab;
+          
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          btn.classList.add('active');
+          document.getElementById(`${targetTab}-tab`).classList.add('active');
+        });
+      });
+    }, 0);
+    
     document.body.appendChild(modal);
   };
 
