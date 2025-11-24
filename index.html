@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/common.css" />
     <link rel="stylesheet" href="css/consultorios.css" />
     <link rel="stylesheet" href="css/pacientes.css" />
+    <link rel="stylesheet" href="css/paciente-detalle.css" />
     <link rel="stylesheet" href="css/flujos-pacientes.css" />
     <link rel="stylesheet" href="css/turnos.css" />
     <link rel="stylesheet" href="css/historial.css" />
@@ -789,6 +790,171 @@
         </table>
 
         <div id="noResultados" style="display: none">Sin resultados</div>
+      </section>
+
+      <!-- ====== DETALLES DEL PACIENTE ====== -->
+      <section id="paciente-detalle-view" class="view" style="display: none">
+        <div class="detalle-header">
+          <button class="btn-back" id="btnVolverListado">
+            <i class="material-icons">arrow_back</i>
+            Volver al Listado
+          </button>
+        </div>
+
+        <div class="patient-details-page">
+          <!-- Header con información principal -->
+          <div class="detail-page-header">
+            <div class="patient-avatar">
+              <i class="material-icons">person</i>
+            </div>
+            <div class="patient-title-info">
+              <h2 id="detalle-nombre">Cargando...</h2>
+              <div class="patient-badges">
+                <span class="badge" id="detalle-documento"></span>
+                <span class="badge" id="detalle-estado"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs de navegación -->
+          <div class="detail-tabs">
+            <button class="detail-tab active" data-detail-tab="info">
+              <i class="material-icons">info</i>
+              Información General
+            </button>
+            <button class="detail-tab" data-detail-tab="history">
+              <i class="material-icons">history</i>
+              Historial de Visitas
+            </button>
+          </div>
+
+          <!-- Contenido de las tabs -->
+          <div class="detail-content">
+            <!-- Tab: Información -->
+            <div class="detail-tab-content active" id="detail-info-tab">
+              <div class="info-cards-grid">
+                <!-- Card: Datos Personales -->
+                <div class="info-card">
+                  <h3 class="info-card-title">
+                    <i class="material-icons">badge</i>
+                    Datos Personales
+                  </h3>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span class="info-label">Tipo Documento</span>
+                      <span class="info-value" id="info-tipo-doc"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Número Documento</span>
+                      <span class="info-value" id="info-num-doc"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Primer Nombre</span>
+                      <span class="info-value" id="info-primer-nombre"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Segundo Nombre</span>
+                      <span class="info-value" id="info-segundo-nombre"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Primer Apellido</span>
+                      <span class="info-value" id="info-primer-apellido"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Segundo Apellido</span>
+                      <span class="info-value" id="info-segundo-apellido"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Contacto</span>
+                      <span class="info-value" id="info-contacto"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card: Seguridad Social -->
+                <div class="info-card">
+                  <h3 class="info-card-title">
+                    <i class="material-icons">health_and_safety</i>
+                    Seguridad Social
+                  </h3>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span class="info-label">EPS</span>
+                      <span class="info-value" id="info-eps"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">AFP</span>
+                      <span class="info-value" id="info-afp"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">ARL</span>
+                      <span class="info-value" id="info-arl"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card: Información Laboral -->
+                <div class="info-card">
+                  <h3 class="info-card-title">
+                    <i class="material-icons">business</i>
+                    Información Laboral
+                  </h3>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span class="info-label">Empresa</span>
+                      <span class="info-value" id="info-empresa"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Cargo</span>
+                      <span class="info-value" id="info-cargo"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Responsable</span>
+                      <span class="info-value" id="info-responsable"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card: Visita Actual -->
+                <div class="info-card">
+                  <h3 class="info-card-title">
+                    <i class="material-icons">medical_services</i>
+                    Información de la Visita
+                  </h3>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span class="info-label">Tipo de Examen</span>
+                      <span class="info-value" id="info-tipo-examen"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Consultorio</span>
+                      <span class="info-value" id="info-consultorio"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Turno</span>
+                      <span class="info-value" id="info-turno"></span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Valor</span>
+                      <span class="info-value" id="info-valor"></span>
+                    </div>
+                    <div class="info-row full-width">
+                      <span class="info-label">Observación</span>
+                      <span class="info-value" id="info-observacion"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Historial -->
+            <div class="detail-tab-content" id="detail-history-tab">
+              <div id="historial-container">
+                <!-- Se llenará dinámicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ====== INFORMANTE ====== -->

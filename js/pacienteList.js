@@ -156,7 +156,7 @@
     });
   });
 
-  // Función para ver detalles con historial
+  // Función para ver detalles - Navega a vista dedicada
   window.viewDetails = async (id) => {
     console.log('👁️ Ver detalles llamado con ID:', id);
     try {
@@ -165,12 +165,173 @@
       // Obtener historial del paciente por documento
       const historial = await fetchPatientHistory(p.numero_documento || p.cedula);
       console.log('📜 Historial obtenido:', historial.length, 'visitas');
-      showPatientDetails(p, historial);
+      
+      // Navegar a la vista de detalles
+      navigateToDetailView(p, historial);
     } catch (error) {
       console.error('❌ Error al cargar detalles:', error);
       showToast('Error al cargar detalles del paciente');
     }
   };
+
+  // Función para navegar a la vista de detalles
+  function navigateToDetailView(paciente, historial) {
+    // Ocultar vista de pacientes y mostrar vista de detalles
+    document.getElementById('pacientes-view').style.display = 'none';
+    document.getElementById('paciente-detalle-view').style.display = 'block';
+    
+    // Llenar información del paciente
+    fillPatientDetails(paciente, historial);
+    
+    // Configurar botón de volver
+    document.getElementById('btnVolverListado').onclick = () => {
+      document.getElementById('paciente-detalle-view').style.display = 'none';
+      document.getElementById('pacientes-view').style.display = 'block';
+    };
+    
+    // Configurar tabs de la vista de detalles
+    setupDetailTabs();
+  }
+  
+  // Llenar datos del paciente en la vista
+  function fillPatientDetails(p, historial) {
+    const cons = consultorios[p.consultorio_id];
+    const nombreCompleto = pacienteService.getNombreCompleto(p);
+    
+    // Header
+    document.getElementById('detalle-nombre').textContent = nombreCompleto;
+    document.getElementById('detalle-documento').textContent = `${p.tipo_documento} ${p.numero_documento || p.cedula}`;
+    
+    // Estado
+    let estadoText = 'En Espera';
+    let estadoClass = 'badge-waiting';
+    if (p.en_atencion) {
+      estadoText = 'En Atención';
+      estadoClass = 'badge-in-progress';
+    } else if (p.atendido) {
+      estadoText = 'Atendido';
+      estadoClass = 'badge-completed';
+    }
+    const estadoBadge = document.getElementById('detalle-estado');
+    estadoBadge.textContent = estadoText;
+    estadoBadge.className = `badge ${estadoClass}`;
+    
+    // Datos Personales
+    document.getElementById('info-tipo-doc').textContent = p.tipo_documento || 'N/A';
+    document.getElementById('info-num-doc').textContent = p.numero_documento || p.cedula || 'N/A';
+    document.getElementById('info-primer-nombre').textContent = p.primer_nombre || 'N/A';
+    document.getElementById('info-segundo-nombre').textContent = p.segundo_nombre || 'N/A';
+    document.getElementById('info-primer-apellido').textContent = p.primer_apellido || 'N/A';
+    document.getElementById('info-segundo-apellido').textContent = p.segundo_apellido || 'N/A';
+    document.getElementById('info-contacto').textContent = p.contacto || 'N/A';
+    
+    // Seguridad Social
+    document.getElementById('info-eps').textContent = p.eps || 'N/A';
+    document.getElementById('info-afp').textContent = p.afp || 'N/A';
+    document.getElementById('info-arl').textContent = p.arl || 'N/A';
+    
+    // Información Laboral
+    document.getElementById('info-empresa').textContent = p.empresa || 'N/A';
+    document.getElementById('info-cargo').textContent = p.cargo || 'N/A';
+    document.getElementById('info-responsable').textContent = p.responsable_empresa || 'N/A';
+    
+    // Visita Actual
+    document.getElementById('info-tipo-examen').textContent = p.tipo_examen || 'N/A';
+    document.getElementById('info-consultorio').textContent = cons ? cons.consultorio : 'N/A';
+    document.getElementById('info-turno').textContent = p.turno || 'Sin asignar';
+    document.getElementById('info-valor').textContent = `$${p.valor.toLocaleString('es-CO')}`;
+    document.getElementById('info-observacion').textContent = p.observacion || 'Sin observaciones';
+    
+    // Llenar historial
+    fillHistorial(p, historial);
+  }
+  
+  // Llenar historial en la vista de detalles
+  function fillHistorial(currentPatient, historial) {
+    const container = document.getElementById('historial-container');
+    
+    if (historial.length === 0) {
+      container.innerHTML = '<p class="no-history">No hay historial previo de visitas.</p>';
+      return;
+    }
+    
+    const historialHTML = `
+      <h3 class="historial-title">
+        <i class="material-icons">history</i>
+        Historial de Visitas (${historial.length})
+      </h3>
+      <div class="history-timeline">
+        ${historial.map((visit, index) => {
+          const visitCons = consultorios[visit.consultorio_id];
+          const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : new Date());
+          const isCurrentVisit = visit.id === currentPatient.id;
+          
+          return `
+            <div class="timeline-item ${isCurrentVisit ? 'current-visit' : ''}">
+              <div class="timeline-marker">
+                <span class="visit-number">#${historial.length - index}</span>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div class="timeline-date">
+                    <i class="material-icons">event</i>
+                    ${visitDate.toLocaleDateString('es-CO', { 
+                      weekday: 'long',
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                  ${isCurrentVisit ? '<span class="current-visit-badge">Visita Actual</span>' : ''}
+                </div>
+                <div class="timeline-body">
+                  <div class="timeline-detail">
+                    <strong>Consultorio:</strong> ${visitCons ? visitCons.consultorio : 'N/A'}
+                  </div>
+                  <div class="timeline-detail">
+                    <strong>Tipo de Examen:</strong> ${visit.tipo_examen}
+                  </div>
+                  <div class="timeline-detail">
+                    <strong>Empresa:</strong> ${visit.empresa || 'N/A'}
+                  </div>
+                  <div class="timeline-detail">
+                    <strong>Valor:</strong> $${visit.valor.toLocaleString('es-CO')}
+                  </div>
+                  ${visit.observacion ? `
+                    <div class="timeline-detail full">
+                      <strong>Observación:</strong> ${visit.observacion}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    
+    container.innerHTML = historialHTML;
+  }
+  
+  // Configurar tabs de la vista de detalles
+  function setupDetailTabs() {
+    const tabBtns = document.querySelectorAll('.detail-tab');
+    const tabContents = document.querySelectorAll('.detail-tab-content');
+    
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.detailTab;
+        
+        // Remover active de todos
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+        // Activar el seleccionado
+        btn.classList.add('active');
+        document.getElementById(`detail-${targetTab}-tab`).classList.add('active');
+      });
+    });
+  }
 
   // Función para obtener historial del paciente
   async function fetchPatientHistory(documento) {
