@@ -44,7 +44,7 @@
         
         <div class="form-row">
           <label>
-            Número de Documento <span class="required">*</span>
+            <span class="label-text">Número de Documento<span class="required">*</span></span>
             <input
               type="text"
               name="numero_documento"
@@ -55,7 +55,7 @@
           </label>
 
           <label>
-            Tipo de Documento
+            <span class="label-text">Tipo de Documento</span>
             <select name="tipo_documento">
               <option value="CEDULA">Cédula de Ciudadanía</option>
               <option value="TI">Tarjeta de Identidad</option>
@@ -68,23 +68,34 @@
 
         <div class="form-row">
           <label>
-            Primer Nombre <span class="required">*</span>
+            <span class="label-text">Primer Nombre<span class="required">*</span></span>
             <input type="text" name="primer_nombre" required />
           </label>
           <label>
-            Segundo Nombre
+            <span class="label-text">Segundo Nombre</span>
             <input type="text" name="segundo_nombre" />
           </label>
         </div>
 
         <div class="form-row">
           <label>
-            Primer Apellido <span class="required">*</span>
+            <span class="label-text">Primer Apellido<span class="required">*</span></span>
             <input type="text" name="primer_apellido" required />
           </label>
           <label>
-            Segundo Apellido
+            <span class="label-text">Segundo Apellido</span>
             <input type="text" name="segundo_apellido" />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            <span class="label-text">Contacto (Teléfono)</span>
+            <input type="tel" name="contacto" placeholder="Ej: 3001234567" />
+          </label>
+          <label>
+            <span class="label-text">EPS</span>
+            <input type="text" name="eps" placeholder="Ej: Salud Total" />
           </label>
         </div>
       </fieldset>
@@ -95,14 +106,33 @@
         
         <div class="form-row">
           <label>
-            Empresa <span class="required">*</span>
+            <span class="label-text">Empresa<span class="required">*</span></span>
             <input type="text" name="empresa" required placeholder="Nombre de la empresa" />
           </label>
           <label>
-            Cargo
+            <span class="label-text">Cargo</span>
             <input type="text" name="cargo" placeholder="Ej: Operario" />
           </label>
         </div>
+
+        <div class="form-row">
+          <label>
+            <span class="label-text">AFP</span>
+            <input type="text" name="afp" placeholder="Ej: Porvenir" />
+          </label>
+          <label>
+            <span class="label-text">ARL</span>
+            <input type="text" name="arl" placeholder="Ej: Positiva" />
+          </label>
+        </div>
+
+        <label>
+          <span class="label-text">Responsable de la Empresa</span>
+          <input
+            type="text"
+            name="responsable_empresa"
+            placeholder="Persona que agenda - Ej: María Gómez - 3009876543" />
+        </label>
       </fieldset>
 
       <!-- Información del examen -->
@@ -110,7 +140,7 @@
         <legend>Información del Examen</legend>
         
         <label>
-          Tipo de Examen <span class="required">*</span>
+          <span class="label-text">Tipo de Examen<span class="required">*</span></span>
           <select name="tipo_examen" required>
             <option value="">Seleccione...</option>
             <option value="CONSULTA_GENERAL">Consulta General</option>
@@ -123,11 +153,25 @@
         </label>
 
         <label>
-          Consultorio <span class="required">*</span>
-          <select name="consultorio_id" required>
-            <option value="">Cargando...</option>
-          </select>
+          <span class="label-text">Observación</span>
+          <textarea
+            name="observacion"
+            rows="3"
+            placeholder="Información adicional sobre el examen"></textarea>
         </label>
+
+        <div class="form-row">
+          <label>
+            <span class="label-text">Valor (V/R)</span>
+            <input type="number" name="valor" min="0" step="1000" value="0" />
+          </label>
+          <label>
+            <span class="label-text">Consultorio<span class="required">*</span></span>
+            <select name="consultorio_id" required>
+              <option value="">Cargando...</option>
+            </select>
+          </label>
+        </div>
       </fieldset>
 
       <div class="form-note walkin">
@@ -167,7 +211,7 @@
         
         <div class="form-row">
           <label>
-            Fecha y Hora <span class="required">*</span>
+            <span class="label-text">Fecha y Hora<span class="required">*</span></span>
             <input
               type="datetime-local"
               name="hora_agendada"
@@ -195,49 +239,56 @@
         
         <div class="form-row">
           <label>
-            Número de Documento <span class="required">*</span>
-            <input type="text" name="numero_documento" required />
+            <span class="label-text">Número de Documento<span class="required">*</span></span>
+            <input
+              type="text"
+              name="numero_documento"
+              required
+              placeholder="Ej: 123456789"
+              minlength="6"
+              maxlength="15" />
           </label>
           <label>
-            Tipo de Documento
+            <span class="label-text">Tipo de Documento</span>
             <select name="tipo_documento">
               <option value="CEDULA">Cédula de Ciudadanía</option>
               <option value="TI">Tarjeta de Identidad</option>
               <option value="CE">Cédula de Extranjería</option>
               <option value="PPT">Permiso de Protección Temporal</option>
+              <option value="PERMISO_TURISMO">Permiso de Turismo</option>
             </select>
           </label>
         </div>
 
         <div class="form-row">
           <label>
-            Primer Nombre <span class="required">*</span>
+            <span class="label-text">Primer Nombre<span class="required">*</span></span>
             <input type="text" name="primer_nombre" required />
           </label>
           <label>
-            Segundo Nombre
+            <span class="label-text">Segundo Nombre</span>
             <input type="text" name="segundo_nombre" />
           </label>
         </div>
 
         <div class="form-row">
           <label>
-            Primer Apellido <span class="required">*</span>
+            <span class="label-text">Primer Apellido<span class="required">*</span></span>
             <input type="text" name="primer_apellido" required />
           </label>
           <label>
-            Segundo Apellido
+            <span class="label-text">Segundo Apellido</span>
             <input type="text" name="segundo_apellido" />
           </label>
         </div>
 
         <div class="form-row">
           <label>
-            Contacto (Teléfono)
+            <span class="label-text">Contacto (Teléfono)</span>
             <input type="tel" name="contacto" placeholder="Ej: 3001234567" />
           </label>
           <label>
-            EPS
+            <span class="label-text">EPS</span>
             <input type="text" name="eps" placeholder="Ej: Salud Total" />
           </label>
         </div>
@@ -249,28 +300,28 @@
         
         <div class="form-row">
           <label>
-            Empresa <span class="required">*</span>
-            <input type="text" name="empresa" required />
+            <span class="label-text">Empresa<span class="required">*</span></span>
+            <input type="text" name="empresa" required placeholder="Nombre de la empresa" />
           </label>
           <label>
-            Cargo
-            <input type="text" name="cargo" />
+            <span class="label-text">Cargo</span>
+            <input type="text" name="cargo" placeholder="Ej: Operario" />
           </label>
         </div>
 
         <div class="form-row">
           <label>
-            AFP
+            <span class="label-text">AFP</span>
             <input type="text" name="afp" placeholder="Ej: Porvenir" />
           </label>
           <label>
-            ARL
+            <span class="label-text">ARL</span>
             <input type="text" name="arl" placeholder="Ej: Positiva" />
           </label>
         </div>
 
         <label>
-          Responsable de la Empresa
+          <span class="label-text">Responsable de la Empresa</span>
           <input
             type="text"
             name="responsable_empresa"
@@ -283,7 +334,7 @@
         <legend>Información del Examen</legend>
         
         <label>
-          Tipo de Examen <span class="required">*</span>
+          <span class="label-text">Tipo de Examen<span class="required">*</span></span>
           <select name="tipo_examen" required>
             <option value="">Seleccione...</option>
             <option value="CONSULTA_GENERAL">Consulta General</option>
@@ -296,7 +347,7 @@
         </label>
 
         <label>
-          Observación
+          <span class="label-text">Observación</span>
           <textarea
             name="observacion"
             rows="3"
@@ -305,11 +356,11 @@
 
         <div class="form-row">
           <label>
-            Valor (V/R)
+            <span class="label-text">Valor (V/R)</span>
             <input type="number" name="valor" min="0" step="1000" value="0" />
           </label>
           <label>
-            Consultorio <span class="required">*</span>
+            <span class="label-text">Consultorio<span class="required">*</span></span>
             <select name="consultorio_id" required>
               <option value="">Cargando...</option>
             </select>

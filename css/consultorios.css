@@ -13,13 +13,23 @@
 }
 
 #consultorioForm label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: block;
   font-size: 14px;
   font-weight: 500;
   color: #333;
   margin-bottom: 15px;
+}
+
+#consultorioForm label .label-text {
+  display: block;
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+#consultorioForm label .label-text .required {
+  color: #dc3545;
+  margin-left: 3px;
+  font-weight: 600;
 }
 
 #consultorioForm select,
@@ -36,12 +46,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-#consultorioForm .required {
-  color: #dc3545;
-  font-weight: bold;
-  margin-left: 2px;
 }
 
 #consultorioForm .form-note {

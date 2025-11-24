@@ -123,12 +123,23 @@
 }
 
 .flujo-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: block;
   font-size: 14px;
   font-weight: 500;
   color: #495057;
+  margin-bottom: 20px;
+}
+
+.flujo-form label .label-text {
+  display: block;
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.flujo-form label .label-text .required {
+  color: #dc3545;
+  margin-left: 3px;
+  font-weight: 600;
 }
 
 .flujo-form input,
