@@ -186,6 +186,13 @@ button:hover {
   transform: translateY(-1px);
 }
 
+/* Iconos dentro de botones */
+button i.material-icons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 /* Botones de Guardar/Registrar - Verde */
 #btnGuardar,
 #btnPacGuardar,
@@ -325,6 +332,8 @@ table button[onclick*='Hide'] {
 .form-actions button {
   flex: 1;
   min-width: 150px;
+  height: 44px;
+  padding: 0 1.25rem;
 }
 
 /* Clases de botones específicas */
