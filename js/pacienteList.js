@@ -182,7 +182,12 @@
       return allPatients.filter(pac => 
         (pac.numero_documento === documento || pac.cedula === documento) &&
         pac.is_visible
-      ).sort((a, b) => new Date(b.hora_entrada) - new Date(a.hora_entrada));
+      ).sort((a, b) => {
+        // Usar hora_entrada o hora_agendada para ordenar
+        const dateA = new Date(a.hora_entrada || a.hora_agendada || 0);
+        const dateB = new Date(b.hora_entrada || b.hora_agendada || 0);
+        return dateB - dateA; // Más reciente primero
+      });
     } catch (error) {
       console.error('Error al obtener historial:', error);
       return [];
@@ -215,7 +220,7 @@
         <div class="history-list">
           ${historial.map((visit, index) => {
             const visitCons = consultorios[visit.consultorio_id];
-            const visitDate = new Date(visit.hora_entrada);
+            const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : new Date());
             const isCurrentVisit = visit.id === p.id;
             
             return `
