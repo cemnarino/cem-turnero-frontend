@@ -375,15 +375,30 @@
     }
   }
   
-  // Inicializar cuando el DOM esté listo
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+  // Inicializar solo cuando se activa la pestaña de pacientes
+  function inicializarCuandoSeaNecesario() {
+    // Solo inicializar si estamos en la vista de pacientes
+    const pacientesView = document.getElementById('pacientes-view');
+    if (pacientesView && pacientesView.classList.contains('active')) {
       init();
       cargarConsultorios();
+    }
+  }
+  
+  // Escuchar evento de cambio de pestaña
+  if (typeof eventBus !== 'undefined') {
+    eventBus.on('tab-changed', (tabId) => {
+      if (tabId === 'pacientes-view') {
+        inicializarCuandoSeaNecesario();
+      }
     });
+  }
+  
+  // También inicializar si ya estamos en la pestaña al cargar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarCuandoSeaNecesario);
   } else {
-    init();
-    cargarConsultorios();
+    inicializarCuandoSeaNecesario();
   }
   
   // Escuchar evento de cambio de vista

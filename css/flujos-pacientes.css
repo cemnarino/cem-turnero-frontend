@@ -1,23 +1,24 @@
 /* ===== ESTILOS PARA SISTEMA DE FLUJOS DE PACIENTES ===== */
 
-/* Selector de flujos (pestañas) */
+/* Selector de flujos (pestañas) - usando GRID */
 .flujo-selector {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 0 0 40px 0;
+  padding: 25px;
   background: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .flujo-btn {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px;
+  justify-content: center;
+  gap: 10px;
+  padding: 25px 20px;
   border: 2px solid #dee2e6;
   border-radius: 12px;
   background: white;
@@ -25,6 +26,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  min-height: 140px;
 }
 
 .flujo-btn::before {
@@ -80,6 +82,9 @@
 .flujos-container {
   position: relative;
   min-height: 600px;
+  margin: 0 auto;
+  max-width: 1400px;
+  padding: 0 20px;
 }
 
 .flujo-form {
@@ -89,6 +94,59 @@
 
 .flujo-form.active {
   display: block;
+}
+
+/* Mejoras de GRID para form-row */
+.flujo-form .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.flujo-form fieldset {
+  margin: 0 0 30px 0;
+  padding: 25px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  background: white;
+}
+
+.flujo-form fieldset legend {
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+}
+
+.flujo-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.flujo-form input,
+.flujo-form select,
+.flujo-form textarea {
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.flujo-form input:focus,
+.flujo-form select:focus,
+.flujo-form textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 @keyframes fadeIn {
@@ -104,8 +162,8 @@
 
 /* Header de formulario */
 .form-header {
-  margin-bottom: 30px;
-  padding: 20px;
+  margin: 0 0 35px 0;
+  padding: 25px 30px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   color: white;
@@ -361,15 +419,29 @@ fieldset.highlight legend {
   font-weight: 600;
 }
 
-/* Responsive */
+/* Responsive - Mobile First */
+@media (max-width: 1024px) {
+  .flujos-container {
+    padding: 0 15px;
+  }
+  
+  .flujo-form .form-row {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+  }
+}
+
 @media (max-width: 768px) {
   .flujo-selector {
-    flex-direction: column;
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+    margin: 0 0 30px 0;
   }
 
   .flujo-btn {
-    padding: 15px;
+    padding: 20px;
+    min-height: 120px;
   }
 
   .flujo-btn i {
@@ -380,9 +452,34 @@ fieldset.highlight legend {
     font-size: 14px;
   }
 
+  .flujos-container {
+    padding: 0 10px;
+  }
+
+  .flujo-form .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .flujo-form fieldset {
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+
+  .form-header {
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+
+  .form-header h2 {
+    font-size: 20px;
+  }
+
   .checkin-filters {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 15px;
   }
 
   .checkin-filters label {
@@ -392,12 +489,93 @@ fieldset.highlight legend {
 
   #checkinTable {
     font-size: 12px;
+    display: block;
+    overflow-x: auto;
   }
 
   #checkinTable th,
   #checkinTable td {
     padding: 10px 8px;
+    white-space: nowrap;
   }
+}
+
+@media (max-width: 480px) {
+  .flujo-selector {
+    padding: 15px;
+    gap: 12px;
+  }
+
+  .flujo-btn {
+    padding: 18px;
+    min-height: 100px;
+  }
+
+  .flujo-btn span {
+    font-size: 13px;
+  }
+
+  .flujo-btn small {
+    font-size: 11px;
+  }
+
+  .form-header h2 {
+    font-size: 18px;
+  }
+
+  .form-header i {
+    font-size: 28px;
+  }
+
+  .flujo-form fieldset {
+    padding: 15px;
+  }
+}
+
+/* Botones de acción */
+.flujo-form .btn-primary,
+.flujo-form .btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.flujo-form .btn-primary:hover,
+.flujo-form .btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
+
+.flujo-form .btn-primary:active,
+.flujo-form .btn-submit:active {
+  transform: translateY(0);
+}
+
+.flujo-form .btn-primary i,
+.flujo-form .btn-submit i {
+  font-size: 20px;
+}
+
+/* Botones de acción del formulario */
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 2px solid #e9ecef;
 }
 
 /* Animaciones adicionales */
