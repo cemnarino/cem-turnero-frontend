@@ -655,3 +655,195 @@ fieldset.highlight legend {
 .flujo-form fieldset:nth-child(2) { animation-delay: 0.2s; }
 .flujo-form fieldset:nth-child(3) { animation-delay: 0.3s; }
 .flujo-form fieldset:nth-child(4) { animation-delay: 0.4s; }
+
+/* ========== BÚSQUEDA POR DOCUMENTO ========== */
+.cedula-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.cedula-input-group input {
+  flex: 1;
+}
+
+.cedula-input-group .search-btn {
+  padding: 0 16px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+}
+
+.cedula-input-group .search-btn:hover {
+  background: #138496;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
+.cedula-input-group .search-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cedula-input-group .search-btn i {
+  font-size: 20px;
+}
+
+/* Panel de resultados de búsqueda */
+.busqueda-resultados {
+  margin: 20px 0;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.historial-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+.historial-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.historial-header i {
+  font-size: 28px;
+}
+
+.historial-header strong {
+  font-size: 18px;
+}
+
+.historial-info {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.historial-info p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.historial-info p:first-child {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.historial-info i.small {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.historial-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.historial-actions button {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-usar-datos {
+  background: white;
+  color: #667eea;
+}
+
+.btn-usar-datos:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.btn-cerrar-historial {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn-cerrar-historial:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.historial-actions button i {
+  font-size: 18px;
+}
+
+/* Animación de rotación para el loader */
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating {
+  animation: rotating 1s linear infinite;
+}
+
+/* Responsive para búsqueda */
+@media (max-width: 768px) {
+  .cedula-input-group {
+    flex-direction: column;
+  }
+  
+  .cedula-input-group .search-btn {
+    width: 100%;
+    padding: 12px;
+  }
+  
+  .historial-actions {
+    flex-direction: column;
+  }
+  
+  .historial-actions button {
+    width: 100%;
+    min-width: unset;
+  }
+}

@@ -443,7 +443,24 @@
               <div class="form-row">
                 <label>
                   Número de Documento <span class="required">*</span>
-                  <input type="text" name="numero_documento" required minlength="6" maxlength="15" />
+                  <div class="cedula-input-group">
+                    <input
+                      type="text"
+                      id="numero_documento"
+                      name="numero_documento"
+                      pattern="^[0-9A-Za-z]{6,15}$"
+                      placeholder="Ingrese el número"
+                      maxlength="15"
+                      minlength="6"
+                      required />
+                    <button
+                      type="button"
+                      id="btnBuscarCedulaAgendar"
+                      class="search-btn"
+                      title="Buscar historial">
+                      <i class="material-icons">search</i>
+                    </button>
+                  </div>
                 </label>
                 <label>
                   Tipo de Documento
@@ -454,6 +471,14 @@
                     <option value="PPT">Permiso de Protección Temporal</option>
                   </select>
                 </label>
+              </div>
+
+              <!-- Resultados de la búsqueda por cédula -->
+              <div
+                id="resultadosBusquedaCedulaAgendar"
+                class="busqueda-resultados"
+                style="display: none">
+                <!-- Se llenará dinámicamente -->
               </div>
 
               <div class="form-row">

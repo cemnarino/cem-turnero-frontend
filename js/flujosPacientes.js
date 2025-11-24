@@ -74,6 +74,147 @@
     console.log(`📋 Flujo cambiado a: ${flujo}`);
   }
   
+  // ========== BÚSQUEDA POR DOCUMENTO ==========
+  function setupDocumentSearch(formId, inputId, btnId, resultsId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    
+    const inputDoc = form.querySelector(`#${inputId}`);
+    const btnBuscar = form.querySelector(`#${btnId}`);
+    const resultsDiv = form.querySelector(`#${resultsId}`);
+    
+    if (!inputDoc || !btnBuscar || !resultsDiv) {
+      console.warn(`⚠️ No se encontraron elementos para búsqueda en ${formId}`);
+      return;
+    }
+    
+    btnBuscar.addEventListener('click', async () => {
+      const numeroDoc = inputDoc.value.trim();
+      
+      if (!numeroDoc || numeroDoc.length < 6) {
+        showToast('⚠️ Ingrese un número de documento válido (mínimo 6 caracteres)', 'warning');
+        return;
+      }
+      
+      try {
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = '<i class="material-icons rotating">hourglass_empty</i>';
+        
+        const response = await fetch(`${API_URLS.base}/pacientes/?numero_documento=${numeroDoc}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const pacientes = await response.json();
+        
+        if (pacientes.length === 0) {
+          showToast('ℹ️ No se encontró historial previo. Puede continuar con el registro.', 'info');
+          resultsDiv.style.display = 'none';
+          return;
+        }
+        
+        // Mostrar resultados
+        mostrarResultadosBusqueda(pacientes, resultsDiv, form);
+        
+      } catch (error) {
+        console.error('Error en búsqueda:', error);
+        showToast('❌ Error al buscar historial', 'error');
+      } finally {
+        btnBuscar.disabled = false;
+        btnBuscar.innerHTML = '<i class="material-icons">search</i>';
+      }
+    });
+  }
+  
+  function mostrarResultadosBusqueda(pacientes, resultsDiv, form) {
+    // Ordenar por fecha más reciente
+    pacientes.sort((a, b) => {
+      const fechaA = new Date(a.hora_entrada || a.hora_agendada || 0);
+      const fechaB = new Date(b.hora_entrada || b.hora_agendada || 0);
+      return fechaB - fechaA;
+    });
+    
+    const ultimoPaciente = pacientes[0];
+    
+    resultsDiv.innerHTML = `
+      <div class="historial-card">
+        <div class="historial-header">
+          <i class="material-icons">history</i>
+          <strong>Historial encontrado (${pacientes.length} registro${pacientes.length > 1 ? 's' : ''})</strong>
+        </div>
+        <div class="historial-info">
+          <p><strong>Último registro:</strong></p>
+          <p><i class="material-icons small">person</i> ${ultimoPaciente.primer_nombre} ${ultimoPaciente.segundo_nombre || ''} ${ultimoPaciente.primer_apellido} ${ultimoPaciente.segundo_apellido || ''}</p>
+          <p><i class="material-icons small">business</i> ${ultimoPaciente.empresa || 'Sin empresa'}</p>
+          <p><i class="material-icons small">phone</i> ${ultimoPaciente.contacto || 'Sin contacto'}</p>
+          <p><i class="material-icons small">medical_services</i> ${ultimoPaciente.eps || 'Sin EPS'}</p>
+        </div>
+        <div class="historial-actions">
+          <button type="button" class="btn-usar-datos" onclick="usarDatosHistorial(${ultimoPaciente.id}, '${form.id}')">
+            <i class="material-icons">content_copy</i>
+            Usar estos datos
+          </button>
+          <button type="button" class="btn-cerrar-historial" onclick="cerrarHistorial('${resultsDiv.id}')">
+            <i class="material-icons">close</i>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+  }
+  
+  // Función global para usar datos del historial
+  window.usarDatosHistorial = async function(pacienteId, formId) {
+    try {
+      const response = await fetch(`${API_URLS.base}/pacientes/${pacienteId}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const paciente = await response.json();
+      const form = document.getElementById(formId);
+      
+      if (!form) return;
+      
+      // Rellenar campos del formulario (excepto hora_agendada y consultorio)
+      const camposRellenar = [
+        'tipo_documento', 'numero_documento',
+        'primer_nombre', 'segundo_nombre',
+        'primer_apellido', 'segundo_apellido',
+        'contacto', 'eps', 'afp', 'arl',
+        'empresa', 'cargo', 'responsable_empresa'
+      ];
+      
+      camposRellenar.forEach(campo => {
+        const input = form.querySelector(`[name="${campo}"]`);
+        if (input && paciente[campo]) {
+          input.value = paciente[campo];
+        }
+      });
+      
+      showToast('✅ Datos cargados desde el historial', 'success');
+      
+      // Cerrar el panel de resultados
+      const resultsDiv = form.querySelector('.busqueda-resultados');
+      if (resultsDiv) {
+        resultsDiv.style.display = 'none';
+      }
+      
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      showToast('❌ Error al cargar datos del historial', 'error');
+    }
+  };
+  
+  // Función global para cerrar historial
+  window.cerrarHistorial = function(resultsId) {
+    const resultsDiv = document.getElementById(resultsId);
+    if (resultsDiv) {
+      resultsDiv.style.display = 'none';
+    }
+  };
+  
   // ========== WALK-IN ==========
   function setupWalkinForm() {
     try {
@@ -82,6 +223,9 @@
         console.warn('⚠️ Formulario walk-in no encontrado');
         return;
       }
+      
+      // Configurar búsqueda por número de documento
+      setupDocumentSearch('walkinForm', 'numero_documento', 'btnBuscarCedula', 'resultadosBusquedaCedula');
       
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -184,6 +328,9 @@
         console.warn('⚠️ Formulario agendar no encontrado');
         return;
       }
+      
+      // Configurar búsqueda por número de documento
+      setupDocumentSearch('agendarForm', 'numero_documento', 'btnBuscarCedulaAgendar', 'resultadosBusquedaCedulaAgendar');
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
