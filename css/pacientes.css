@@ -156,26 +156,12 @@
   overflow: visible;
 }
 
-/* Columna de acciones fija a la derecha */
+/* Columna de acciones */
 #pacienteTable .actions-cell {
-  position: sticky;
-  right: 0;
-  background: white;
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
-  z-index: 2;
   min-width: 60px;
   width: 60px;
   max-width: 60px;
   text-align: center;
-}
-
-#pacienteTable thead .actions-cell {
-  background: var(--input);
-  z-index: 3;
-}
-
-#pacienteTable tbody tr:hover .actions-cell {
-  background: var(--input);
 }
 
 /* Botón de menú (tres puntos) */
