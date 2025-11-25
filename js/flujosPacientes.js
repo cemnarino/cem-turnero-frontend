@@ -639,7 +639,9 @@
           .forEach(c => {
             const option = document.createElement('option');
             option.value = c.id;
-            option.textContent = `${c.consultorio} - ${c.nombre_medico}`;
+            option.textContent = c.nombre_medico ? 
+              `${c.consultorio} - ${c.nombre_medico}` : 
+              c.consultorio;
             select.appendChild(option);
           });
       });
