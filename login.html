@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CEM Nariño</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-form {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .material-icons {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 20px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-message.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #90caf9;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🏥 CEM Nariño</h1>
+            <p>Sistema de Gestión de Turnos</p>
+        </div>
+
+        <form class="login-form" id="loginForm">
+            <div id="statusMessage" class="status-message">
+                <span class="material-icons">info</span>
+                <span id="statusText"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <div class="input-wrapper">
+                    <span class="material-icons">person</span>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        placeholder="Ingrese su usuario"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <div class="input-wrapper">
+                    <span class="material-icons">lock</span>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Ingrese su contraseña"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                <span class="material-icons">login</span>
+                <span id="buttonText">Iniciar Sesión</span>
+            </button>
+        </form>
+
+        <div class="footer">
+            Centro Médico de Especialistas de Nariño © 2025
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const buttonText = document.getElementById('buttonText');
+        const statusMessage = document.getElementById('statusMessage');
+        const statusText = document.getElementById('statusText');
+
+        // Verificar si ya hay sesión activa
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('auth_token');
+            const tokenExpiry = localStorage.getItem('token_expiry');
+            
+            if (token && tokenExpiry) {
+                const now = Date.now();
+                if (now < parseInt(tokenExpiry)) {
+                    // Token aún válido, redirigir
+                    window.location.href = 'index.html';
+                    return;
+                } else {
+                    // Token expirado, limpiar
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('token_expiry');
+                    localStorage.removeItem('user_info');
+                }
+            }
+        });
+
+        // Mostrar mensaje de estado
+        function showStatus(message, type) {
+            statusText.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'flex';
+        }
+
+        // Ocultar mensaje de estado
+        function hideStatus() {
+            statusMessage.style.display = 'none';
+        }
+
+        // Cambiar estado del botón
+        function setButtonLoading(loading) {
+            loginButton.disabled = loading;
+            if (loading) {
+                buttonText.innerHTML = '<div class="spinner"></div>';
+            } else {
+                buttonText.innerHTML = '<span class="material-icons">login</span><span>Iniciar Sesión</span>';
+            }
+        }
+
+        // Despertar el backend (health check)
+        async function wakeUpBackend() {
+            try {
+                showStatus('Despertando servidor...', 'info');
+                const response = await fetch(`${API_URLS.base}/auth/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    return true;
+                }
+                
+                throw new Error('Backend no responde');
+            } catch (error) {
+                console.error('Error en health check:', error);
+                throw error;
+            }
+        }
+
+        // Hacer login
+        async function doLogin(username, password) {
+            try {
+                const response = await fetch(`${API_URLS.base}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al iniciar sesión');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error en login:', error);
+                throw error;
+            }
+        }
+
+        // Manejar submit del formulario
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideStatus();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showStatus('Por favor complete todos los campos', 'error');
+                return;
+            }
+
+            setButtonLoading(true);
+
+            try {
+                // Paso 1: Despertar el backend
+                showStatus('Conectando con el servidor...', 'info');
+                await wakeUpBackend();
+                
+                // Paso 2: Intentar login
+                showStatus('Verificando credenciales...', 'info');
+                const loginData = await doLogin(username, password);
+
+                // Paso 3: Guardar token y datos del usuario
+                const expiryTime = Date.now() + (loginData.expires_in * 1000);
+                localStorage.setItem('auth_token', loginData.access_token);
+                localStorage.setItem('token_expiry', expiryTime.toString());
+                localStorage.setItem('user_info', JSON.stringify(loginData.user));
+
+                // Paso 4: Redirigir
+                showStatus('¡Inicio de sesión exitoso!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+
+            } catch (error) {
+                console.error('Error en login:', error);
+                showStatus(error.message || 'Error al iniciar sesión. Intente nuevamente.', 'error');
+                setButtonLoading(false);
+            }
+        });
+    </script>
+</body>
+</html>

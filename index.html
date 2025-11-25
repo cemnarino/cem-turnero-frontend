@@ -17,6 +17,31 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet" />
     <script>
+      // Verificar autenticación antes de cargar
+      (function() {
+        const token = localStorage.getItem('auth_token');
+        const tokenExpiry = localStorage.getItem('token_expiry');
+        
+        if (!token || !tokenExpiry) {
+          // No hay token, redirigir a login
+          window.location.href = 'login.html';
+          return;
+        }
+        
+        const now = Date.now();
+        if (now >= parseInt(tokenExpiry)) {
+          // Token expirado, limpiar y redirigir
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('token_expiry');
+          localStorage.removeItem('user_info');
+          window.location.href = 'login.html';
+          return;
+        }
+        
+        // Token válido, continuar
+        console.log('✅ Sesión activa');
+      })();
+      
       // Asegura que el DOM esté listo
       document.addEventListener('DOMContentLoaded', () => {
         // Activa Consultorios al arrancar
@@ -27,6 +52,9 @@
   <body>
     <header class="main-navbar">
       <h1>Centro Médico de Especialistas de Nariño - CEM - Nariño</h1>
+      <button id="logoutBtn" class="logout-btn" title="Cerrar Sesión">
+        <i class="material-icons">logout</i>
+      </button>
     </header>
 
     <!-- Sidebar -->
@@ -1180,6 +1208,16 @@
         document.body.appendChild(t);
         setTimeout(() => t.remove(), 3000);
       }
+      
+      // Logout handler
+      document.getElementById('logoutBtn')?.addEventListener('click', () => {
+        if (confirm('¿Está seguro que desea cerrar sesión?')) {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('token_expiry');
+          localStorage.removeItem('user_info');
+          window.location.href = 'login.html';
+        }
+      });
     </script>
     
     <style>

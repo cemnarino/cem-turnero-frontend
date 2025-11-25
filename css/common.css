@@ -47,11 +47,37 @@ body {
   font-weight: 600;
   font-size: 1.125rem;
   letter-spacing: 0.025em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .main-navbar h1 {
   margin: 0;
   color: white;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.logout-btn .material-icons {
+  font-size: 20px;
 }
 
 /* ===== TABS ===== */
