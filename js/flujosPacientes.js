@@ -426,6 +426,11 @@
           
           showToast(`✅ Cita agendada para ${fechaCita}`, 'success');
           form.reset();
+          
+          // Resetear calendario
+          if (typeof window.calendarioFunctions !== 'undefined' && window.calendarioFunctions.resetearCalendario) {
+            window.calendarioFunctions.resetearCalendario();
+          }
         } catch (error) {
           console.error('Error al agendar:', error);
           showToast('❌ Error al agendar cita', 'error');

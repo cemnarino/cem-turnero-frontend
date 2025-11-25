@@ -67,7 +67,7 @@ function inicializarCalendario() {
  */
 async function cargarConsultoriosCalendario() {
   try {
-    const response = await fetch(`${API_BASE_URL}/consultorios/`);
+    const response = await fetch(`${API_URLS.base}/consultorios/`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const consultorios = await response.json();
@@ -80,7 +80,9 @@ async function cargarConsultoriosCalendario() {
       .forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
-        option.textContent = `${c.consultorio} - ${c.nombre_medico}`;
+        option.textContent = c.nombre_medico ? 
+          `${c.consultorio} - ${c.nombre_medico}` : 
+          c.consultorio;
         select.appendChild(option);
       });
       
@@ -99,14 +101,40 @@ async function cargarDisponibilidad() {
   if (!consultorioSeleccionado || !fechaSeleccionada) return;
   
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/pacientes/disponibilidad/slots?consultorio_id=${consultorioSeleccionado}&fecha=${fechaSeleccionada}`
+    // Cargar consultor io para obtener información
+    const consultorioResponse = await fetch(`${API_URLS.base}/consultorios/${consultorioSeleccionado}`);
+    if (!consultorioResponse.ok) throw new Error('Error cargando consultorio');
+    const consultorio = await consultorioResponse.json();
+    
+    // Cargar pacientes agendados para ese día y consultorio
+    const pacientesResponse = await fetch(
+      `${API_URLS.base}/pacientes/?consultorio_id=${consultorioSeleccionado}&fecha=${fechaSeleccionada}`
     );
+    if (!pacientesResponse.ok) throw new Error('Error cargando pacientes');
+    const pacientes = await pacientesResponse.json();
     
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    // Filtrar solo los agendados para esta fecha
+    const citasAgendadas = pacientes.filter(p => {
+      if (!p.hora_agendada) return false;
+      const fechaCita = new Date(p.hora_agendada).toISOString().split('T')[0];
+      return fechaCita === fechaSeleccionada;
+    });
     
-    const data = await response.json();
-    calendarioState.slotsDisponibles = data.slots;
+    // Generar slots y marcar ocupados
+    const slots = generarSlots(fechaSeleccionada, citasAgendadas);
+    calendarioState.slotsDisponibles = slots;
+    
+    // Preparar datos para mostrar
+    const data = {
+      consultorio: consultorio.consultorio,
+      nombre_medico: consultorio.nombre_medico || 'Sin médico asignado',
+      fecha: fechaSeleccionada,
+      dia_semana: obtenerDiaSemana(fechaSeleccionada),
+      slots: slots,
+      slots_disponibles: slots.filter(s => s.disponible).length,
+      slots_ocupados: slots.filter(s => !s.disponible).length,
+      disponible: true
+    };
     
     mostrarSlots(data);
     
@@ -263,6 +291,71 @@ function mostrarConfirmacion(slot) {
 }
 
 /**
+ * Genera slots de horarios disponibles
+ */
+function generarSlots(fecha, citasAgendadas) {
+  const diaSemana = new Date(fecha + 'T00:00:00').getDay();
+  const slots = [];
+  
+  // Determinar horarios según día de la semana
+  let horarios;
+  if (diaSemana === 0) {
+    // Domingo - no hay atención
+    return [];
+  } else if (diaSemana === 6) {
+    // Sábado - solo mañana
+    horarios = [HORARIOS.sabado.manana];
+  } else {
+    // Lunes a Viernes
+    horarios = [HORARIOS.lunes_viernes.manana, HORARIOS.lunes_viernes.tarde];
+  }
+  
+  // Generar slots para cada bloque horario
+  horarios.forEach(bloque => {
+    const [horaInicio, minInicio] = bloque.inicio.split(':').map(Number);
+    const [horaFin, minFin] = bloque.fin.split(':').map(Number);
+    
+    let hora = horaInicio;
+    let min = minInicio;
+    
+    while (hora < horaFin || (hora === horaFin && min <= minFin)) {
+      const horaStr = `${hora.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      
+      // Verificar si este slot está ocupado
+      const estaOcupado = citasAgendadas.some(cita => {
+        if (!cita.hora_agendada) return false;
+        const horaCita = new Date(cita.hora_agendada);
+        const horaSlot = `${horaCita.getHours().toString().padStart(2, '0')}:${horaCita.getMinutes().toString().padStart(2, '0')}`;
+        return horaSlot === horaStr;
+      });
+      
+      slots.push({
+        hora: horaStr,
+        disponible: !estaOcupado
+      });
+      
+      // Avanzar 25 minutos
+      min += DURACION_SLOT;
+      if (min >= 60) {
+        hora += Math.floor(min / 60);
+        min = min % 60;
+      }
+    }
+  });
+  
+  return slots;
+}
+
+/**
+ * Obtiene el nombre del día de la semana
+ */
+function obtenerDiaSemana(fechaStr) {
+  const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const fecha = new Date(fechaStr + 'T00:00:00');
+  return dias[fecha.getDay()];
+}
+
+/**
  * Formatea una fecha para mostrar
  */
 function formatearFecha(fechaStr) {
@@ -297,11 +390,31 @@ function resetearCalendario() {
     slotSeleccionado: null
   };
   
+  // Limpiar contenedores visuales
   const container = document.getElementById('slots-container');
   if (container) container.innerHTML = '';
   
   const confirmDiv = document.getElementById('slot-confirmacion');
   if (confirmDiv) confirmDiv.style.display = 'none';
+  
+  // Limpiar campos del formulario
+  const consultorioSelect = document.getElementById('calendario-consultorio');
+  if (consultorioSelect) consultorioSelect.value = '';
+  
+  const fechaInput = document.getElementById('calendario-fecha');
+  if (fechaInput) {
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.value = hoy;
+    calendarioState.fechaSeleccionada = hoy;
+  }
+  
+  const horaAgendadaInput = document.getElementById('hora_agendada');
+  if (horaAgendadaInput) horaAgendadaInput.value = '';
+  
+  const consultorioInput = document.getElementById('consultorio_id');
+  if (consultorioInput) consultorioInput.value = '';
+  
+  console.log('✅ Calendario reseteado');
 }
 
 // Inicializar cuando el DOM esté listo
