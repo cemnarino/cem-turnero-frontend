@@ -216,26 +216,35 @@
       <fieldset class="highlight">
         <legend>Fecha y Hora de la Cita</legend>
         
-        <div class="form-row">
-          <label>
-            <span class="label-text">Fecha y Hora<span class="required">*</span></span>
-            <input
-              type="datetime-local"
-              name="hora_agendada"
-              required
-              title="Seleccione fecha y hora de la cita" />
-          </label>
-          <button type="button" class="btn-secondary btn-calendar" onclick="abrirCalendario()">
-            <i class="material-icons">calendar_month</i>
-            Abrir Agenda Semanal
-          </button>
+        <!-- Calendario de disponibilidad -->
+        <div class="calendario-container">
+          <div class="calendario-selectores">
+            <label>
+              Consultorio <span class="required">*</span>
+              <select id="calendario-consultorio" required>
+                <option value="">Seleccione consultorio...</option>
+              </select>
+            </label>
+            <label>
+              Fecha <span class="required">*</span>
+              <input type="date" id="calendario-fecha" required />
+            </label>
+          </div>
+          
+          <div id="slots-container"></div>
+          <div id="slot-confirmacion"></div>
         </div>
 
+        <!-- Input oculto para hora_agendada (se llena automáticamente) -->
+        <input type="hidden" name="hora_agendada" id="hora_agendada" required />
+        <input type="hidden" name="consultorio_id" id="consultorio_id" required />
+
         <div class="horario-info">
-          <strong>Horarios de atención:</strong>
+          <strong>ℹ️ Información:</strong>
           <ul>
             <li>Lunes a Viernes: 7:00 AM - 12:00 PM / 2:00 PM - 5:00 PM</li>
             <li>Sábados: 7:00 AM - 12:00 PM</li>
+            <li>Duración estimada por consulta: 25 minutos</li>
           </ul>
         </div>
       </fieldset>
