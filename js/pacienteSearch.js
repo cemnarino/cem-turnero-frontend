@@ -141,7 +141,7 @@ async function editPac(id) {
     console.log(`✏️ Editando paciente ID: ${id}`);
     
     // Obtener datos del paciente
-    const paciente = await pacienteService.getById(id);
+    const paciente = await pacienteService.get(id);
     if (!paciente) {
       alert('No se pudo cargar la información del paciente');
       return;
@@ -189,18 +189,55 @@ async function editPac(id) {
           // Obtener el formulario de agendar
           const form = document.getElementById('agendarForm');
           if (form) {
-            // Rellenar también la fecha agendada
-            const horaAgendada = form.querySelector('[name="hora_agendada"]');
-            if (horaAgendada && paciente.hora_agendada) {
-              // Convertir a formato datetime-local
+            // Rellenar el consultorio del calendario
+            const consultorioCalendario = document.getElementById('consultorio-calendario');
+            if (consultorioCalendario && paciente.consultorio_id) {
+              consultorioCalendario.value = paciente.consultorio_id;
+              // Actualizar el estado del calendario
+              if (typeof calendarioState !== 'undefined') {
+                calendarioState.consultorioSeleccionado = paciente.consultorio_id;
+              }
+            }
+            
+            // Rellenar la fecha del calendario
+            if (paciente.hora_agendada) {
               const fecha = new Date(paciente.hora_agendada);
               const año = fecha.getFullYear();
               const mes = String(fecha.getMonth() + 1).padStart(2, '0');
               const dia = String(fecha.getDate()).padStart(2, '0');
               const horas = String(fecha.getHours()).padStart(2, '0');
               const minutos = String(fecha.getMinutes()).padStart(2, '0');
-              horaAgendada.value = `${año}-${mes}-${dia}T${horas}:${minutos}`;
+              
+              // Input de fecha del calendario
+              const fechaInput = document.getElementById('calendario-fecha');
+              if (fechaInput) {
+                fechaInput.value = `${año}-${mes}-${dia}`;
+                // Actualizar el estado del calendario
+                if (typeof calendarioState !== 'undefined') {
+                  calendarioState.fechaSeleccionada = `${año}-${mes}-${dia}`;
+                }
+              }
+              
+              // Input oculto hora_agendada
+              const horaAgendada = document.getElementById('hora_agendada');
+              if (horaAgendada) {
+                horaAgendada.value = `${año}-${mes}-${dia}T${horas}:${minutos}`;
+              }
+              
+              // Input oculto consultorio_id
+              const consultorioId = document.getElementById('consultorio_id');
+              if (consultorioId && paciente.consultorio_id) {
+                consultorioId.value = paciente.consultorio_id;
+              }
+              
+              // Cargar disponibilidad del calendario si la función existe
+              if (typeof window.calendarioFunctions !== 'undefined' && window.calendarioFunctions.cargarDisponibilidad) {
+                setTimeout(() => {
+                  window.calendarioFunctions.cargarDisponibilidad();
+                }, 500);
+              }
             }
+            
             // Guardar ID para actualización
             form.dataset.editingId = id;
             // Cambiar texto del botón
@@ -220,5 +257,10 @@ async function editPac(id) {
     alert('Error al cargar los datos del paciente para edición.');
   }
 }
+
+// Exportar funciones globalmente
+window.buscarPacienteWalkin = buscarPacienteWalkin;
+window.buscarPacienteAgendar = buscarPacienteAgendar;
+window.editPac = editPac;
 
 console.log('✅ Módulo de búsqueda y edición de pacientes cargado');
