@@ -247,7 +247,7 @@ table {
 }
 
 thead {
-  background: var(--input);
+  background: white;
 }
 
 th,
@@ -259,7 +259,7 @@ td {
 
 th {
   font-weight: 600;
-  color: var(--muted-foreground);
+  color: var(--foreground);
 }
 
 tbody tr:hover {

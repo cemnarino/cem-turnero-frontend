@@ -62,7 +62,9 @@
       consultorios.forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
-        option.textContent = `Consultorio ${c.consultorio} - ${c.medico}`;
+        // Extraer solo el número del consultorio si viene como "Consultorio 1"
+        const numeroConsultorio = c.consultorio.replace(/consultorio\s*/i, '').trim();
+        option.textContent = `Consultorio ${numeroConsultorio} - ${c.medico}`;
         select.appendChild(option);
       });
     } catch (error) {

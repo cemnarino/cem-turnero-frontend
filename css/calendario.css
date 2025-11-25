@@ -45,12 +45,12 @@
 .calendario-selectores select:focus,
 .calendario-selectores input[type="date"]:focus {
   outline: none;
-  border-color: #6200ea;
+  border-color: #3b82f6;
 }
 
 /* Información del calendario */
 .calendario-info {
-  background: linear-gradient(135deg, #6200ea 0%, #8e24aa 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   padding: 20px;
   border-radius: 8px;
@@ -96,7 +96,7 @@
 }
 
 .bloque-horario h4 {
-  color: #6200ea;
+  color: #3b82f6;
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 15px 0;
@@ -135,7 +135,7 @@
 
 .slot-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(98, 0, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .slot-btn.disponible {
@@ -159,11 +159,11 @@
 }
 
 .slot-btn.seleccionado {
-  background: #6200ea;
-  border-color: #6200ea;
+  background: #3b82f6;
+  border-color: #3b82f6;
   color: white;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(98, 0, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .slot-btn:disabled {

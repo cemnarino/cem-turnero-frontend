@@ -52,9 +52,9 @@
 
 .flujo-btn.active {
   border-color: var(--primary);
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .flujo-btn i {
@@ -207,7 +207,7 @@
 
 .form-header i {
   font-size: 32px;
-  color: #007bff;
+  color: #667eea;
 }
 
 .form-description {
@@ -254,9 +254,9 @@ fieldset.highlight legend {
 }
 
 .form-note.checkin {
-  background: #cce5ff;
-  border-color: #007bff;
-  color: #004085;
+  background: #f0e6ff;
+  border-color: #667eea;
+  color: #4a148c;
 }
 
 .form-note i {
@@ -443,7 +443,7 @@ fieldset.highlight legend {
 .hora-badge {
   display: inline-block;
   padding: 4px 12px;
-  background: #007bff;
+  background: #667eea;
   color: white;
   border-radius: 20px;
   font-size: 13px;
@@ -596,7 +596,7 @@ fieldset.highlight legend {
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -605,13 +605,13 @@ fieldset.highlight legend {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .flujo-form .btn-primary:hover,
 .flujo-form .btn-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .flujo-form .btn-primary:active,
