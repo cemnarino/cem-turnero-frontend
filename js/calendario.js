@@ -67,11 +67,18 @@ function inicializarCalendario() {
  */
 async function cargarConsultoriosCalendario() {
   try {
+    console.log('📅 Cargando consultorios para calendario...');
     const response = await fetch(`${API_URLS.base}/consultorios/`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const consultorios = await response.json();
+    console.log('📅 Consultorios cargados:', consultorios);
+    
     const select = document.getElementById('calendario-consultorio');
+    if (!select) {
+      console.warn('⚠️ Select calendario-consultorio no encontrado');
+      return;
+    }
     
     select.innerHTML = '<option value="">Seleccione consultorio...</option>';
     
@@ -84,10 +91,11 @@ async function cargarConsultoriosCalendario() {
           `${c.consultorio} - ${c.nombre_medico}` : 
           c.consultorio;
         select.appendChild(option);
+        console.log(`  ✓ ${option.textContent}`);
       });
       
   } catch (error) {
-    console.error('Error al cargar consultorios:', error);
+    console.error('❌ Error al cargar consultorios:', error);
     mostrarError('No se pudieron cargar los consultorios');
   }
 }
