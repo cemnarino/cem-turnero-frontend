@@ -419,20 +419,28 @@
               
               <div class="form-row">
                 <label>
-                  Fecha y Hora <span class="required">*</span>
-                  <input
-                    type="datetime-local"
-                    name="hora_agendada"
-                    required
-                    title="Seleccione fecha y hora de la cita" />
+                  Consultorio <span class="required">*</span>
+                  <select id="consultorio-calendario" name="consultorio_id_temp" required>
+                    <option value="">Seleccione consultorio...</option>
+                  </select>
                 </label>
               </div>
+
+              <!-- Selector de calendario -->
+              <div id="calendario-container" style="display: none;">
+                <div id="agenda-calendar"></div>
+                <div id="slots-disponibles" class="slots-container"></div>
+              </div>
+
+              <!-- Campo oculto para enviar al backend -->
+              <input type="hidden" name="hora_agendada" id="hora_agendada_hidden" required />
 
               <div class="horario-info">
                 <strong>Horarios de atención:</strong>
                 <ul>
                   <li>Lunes a Viernes: 7:00 AM - 12:00 PM / 2:00 PM - 5:00 PM</li>
                   <li>Sábados: 7:00 AM - 12:00 PM</li>
+                  <li>Duración por consulta: 25 minutos</li>
                 </ul>
               </div>
             </fieldset>
@@ -573,13 +581,10 @@
                   Valor (V/R)
                   <input type="number" name="valor" min="0" step="1000" value="0" />
                 </label>
-                <label>
-                  Consultorio <span class="required">*</span>
-                  <select name="consultorio_id" required>
-                    <option value="">Cargando...</option>
-                  </select>
-                </label>
               </div>
+              
+              <!-- Campo oculto para consultorio (ya se seleccionó arriba) -->
+              <input type="hidden" name="consultorio_id" id="consultorio_id_final" />
             </fieldset>
 
             <div class="form-note agendar">
@@ -1161,6 +1166,7 @@
     <script src="js/flujosPacientes.js"></script>
     <script src="js/pacienteSearch.js"></script>
     <script src="js/calendario.js"></script>
+    <script src="js/calendarioAgendamiento.js"></script>
 
     <script>
       function showToast(msg) {
