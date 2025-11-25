@@ -27,13 +27,17 @@ let calendarioState = {
  * Inicializa el sistema de calendario
  */
 function inicializarCalendario() {
-  const consultorioSelect = document.getElementById('calendario-consultorio');
+  const consultorioSelect = document.getElementById('consultorio-calendario');
   const fechaInput = document.getElementById('calendario-fecha');
   
   if (!consultorioSelect || !fechaInput) {
     console.warn('⚠️ Elementos del calendario no encontrados');
+    console.warn('  - consultorio-calendario:', consultorioSelect ? 'OK' : 'NO ENCONTRADO');
+    console.warn('  - calendario-fecha:', fechaInput ? 'OK' : 'NO ENCONTRADO');
     return;
   }
+  
+  console.log('📅 Inicializando calendario...');
   
   // Cargar consultorios
   cargarConsultoriosCalendario();
@@ -47,6 +51,7 @@ function inicializarCalendario() {
   // Eventos
   consultorioSelect.addEventListener('change', (e) => {
     calendarioState.consultorioSeleccionado = parseInt(e.target.value);
+    console.log('📅 Consultorio seleccionado:', calendarioState.consultorioSeleccionado);
     if (calendarioState.consultorioSeleccionado && calendarioState.fechaSeleccionada) {
       cargarDisponibilidad();
     }
@@ -54,6 +59,7 @@ function inicializarCalendario() {
   
   fechaInput.addEventListener('change', (e) => {
     calendarioState.fechaSeleccionada = e.target.value;
+    console.log('📅 Fecha seleccionada:', calendarioState.fechaSeleccionada);
     if (calendarioState.consultorioSeleccionado && calendarioState.fechaSeleccionada) {
       cargarDisponibilidad();
     }
@@ -74,9 +80,9 @@ async function cargarConsultoriosCalendario() {
     const consultorios = await response.json();
     console.log('📅 Consultorios cargados:', consultorios);
     
-    const select = document.getElementById('calendario-consultorio');
+    const select = document.getElementById('consultorio-calendario');
     if (!select) {
-      console.warn('⚠️ Select calendario-consultorio no encontrado');
+      console.warn('⚠️ Select consultorio-calendario no encontrado');
       return;
     }
     
@@ -406,7 +412,7 @@ function resetearCalendario() {
   if (confirmDiv) confirmDiv.style.display = 'none';
   
   // Limpiar campos del formulario
-  const consultorioSelect = document.getElementById('calendario-consultorio');
+  const consultorioSelect = document.getElementById('consultorio-calendario');
   if (consultorioSelect) consultorioSelect.value = '';
   
   const fechaInput = document.getElementById('calendario-fecha');

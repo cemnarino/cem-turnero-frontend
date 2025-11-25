@@ -423,16 +423,21 @@
                     <option value="">Seleccione consultorio...</option>
                   </select>
                 </label>
+                <label>
+                  Fecha <span class="required">*</span>
+                  <input type="date" id="calendario-fecha" required />
+                </label>
               </div>
 
-              <!-- Selector de calendario -->
-              <div id="calendario-container" style="display: none;">
-                <div id="agenda-calendar"></div>
-                <div id="slots-disponibles" class="slots-container"></div>
-              </div>
+              <!-- Contenedor de slots disponibles -->
+              <div id="slots-container"></div>
+              
+              <!-- Confirmación de slot seleccionado -->
+              <div id="slot-confirmacion" style="display: none;"></div>
 
-              <!-- Campo oculto para enviar al backend -->
-              <input type="hidden" name="hora_agendada" id="hora_agendada_hidden" required />
+              <!-- Campos ocultos para enviar al backend -->
+              <input type="hidden" name="hora_agendada" id="hora_agendada" required />
+              <input type="hidden" name="consultorio_id" id="consultorio_id" required />
 
               <div class="horario-info">
                 <strong>Horarios de atención:</strong>
