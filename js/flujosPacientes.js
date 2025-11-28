@@ -338,8 +338,25 @@
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       
+      // DEBUG: Ver todos los datos capturados
+      console.log('📋 Datos capturados del formulario:');
+      console.log('   - hora_agendada:', data.hora_agendada);
+      console.log('   - consultorio_id:', data.consultorio_id);
+      console.log('   - consultorio_id_temp:', data.consultorio_id_temp);
+      console.log('   - Todos los datos:', data);
+      
       // Validar hora_agendada y consultorio
       if (!data.hora_agendada || !data.consultorio_id) {
+        console.error('❌ Validación falló:');
+        console.error('   - hora_agendada:', data.hora_agendada || 'VACÍO');
+        console.error('   - consultorio_id:', data.consultorio_id || 'VACÍO');
+        
+        // DEBUG: Verificar el valor en los inputs directamente
+        const horaInput = document.getElementById('hora_agendada');
+        const consultorioInput = document.getElementById('consultorio_id');
+        console.error('   - Valor en input hora_agendada:', horaInput?.value || 'INPUT NO ENCONTRADO');
+        console.error('   - Valor en input consultorio_id:', consultorioInput?.value || 'INPUT NO ENCONTRADO');
+        
         showToast('⚠️ Debe seleccionar un consultorio, fecha y hora de la cita desde el calendario', 'warning');
         
         // Resaltar el área del calendario

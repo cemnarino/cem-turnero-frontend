@@ -447,13 +447,13 @@
               <div class="form-row">
                 <label>
                   Consultorio <span class="required">*</span>
-                  <select id="consultorio-calendario" name="consultorio_id_temp" required>
+                  <select id="consultorio-calendario">
                     <option value="">Seleccione consultorio...</option>
                   </select>
                 </label>
                 <label>
                   Fecha <span class="required">*</span>
-                  <input type="date" id="calendario-fecha" required />
+                  <input type="date" id="calendario-fecha" />
                 </label>
               </div>
 
@@ -464,8 +464,8 @@
               <div id="slot-confirmacion" style="display: none;"></div>
 
               <!-- Campos ocultos para enviar al backend -->
-              <input type="hidden" name="hora_agendada" id="hora_agendada" required />
-              <input type="hidden" name="consultorio_id" id="consultorio_id" required />
+              <input type="hidden" name="hora_agendada" id="hora_agendada" />
+              <input type="hidden" name="consultorio_id" id="consultorio_id" />
 
               <div class="horario-info">
                 <strong>Horarios de atención:</strong>
