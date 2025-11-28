@@ -39,6 +39,23 @@ function inicializarCalendario() {
   
   console.log('📅 Inicializando calendario...');
   
+  // Mostrar mensaje inicial
+  const container = document.getElementById('slots-container');
+  if (container) {
+    container.innerHTML = `
+      <div class="calendario-instrucciones">
+        <i class="material-icons">info</i>
+        <p><strong>Para agendar una cita:</strong></p>
+        <ol>
+          <li>Seleccione un consultorio arriba</li>
+          <li>Elija la fecha de la cita</li>
+          <li>Seleccione un horario disponible</li>
+          <li>Complete los datos del paciente</li>
+        </ol>
+      </div>
+    `;
+  }
+  
   // Cargar consultorios
   cargarConsultoriosCalendario();
   
@@ -54,6 +71,16 @@ function inicializarCalendario() {
     console.log('📅 Consultorio seleccionado:', calendarioState.consultorioSeleccionado);
     if (calendarioState.consultorioSeleccionado && calendarioState.fechaSeleccionada) {
       cargarDisponibilidad();
+    } else if (!calendarioState.consultorioSeleccionado) {
+      // Si se deselecciona el consultorio, mostrar instrucciones de nuevo
+      if (container) {
+        container.innerHTML = `
+          <div class="calendario-instrucciones">
+            <i class="material-icons">info</i>
+            <p>Seleccione un consultorio para ver horarios disponibles</p>
+          </div>
+        `;
+      }
     }
   });
   
@@ -273,18 +300,40 @@ function seleccionarSlot(slot) {
   const horaAgendadaInput = document.getElementById('hora_agendada');
   if (horaAgendadaInput) {
     horaAgendadaInput.value = fechaHora;
+    console.log('✅ Campo hora_agendada actualizado:', fechaHora);
+  } else {
+    console.error('❌ Campo hora_agendada NO encontrado en el DOM');
   }
   
   // Actualizar también el consultorio en el formulario
   const consultorioInput = document.getElementById('consultorio_id');
   if (consultorioInput) {
     consultorioInput.value = calendarioState.consultorioSeleccionado;
+    console.log('✅ Campo consultorio_id actualizado:', calendarioState.consultorioSeleccionado);
+  } else {
+    console.error('❌ Campo consultorio_id NO encontrado en el DOM');
   }
   
-  console.log('✅ Slot seleccionado:', fechaHora);
-  
-  // Mostrar confirmación
-  mostrarConfirmacion(slot);
+  // Verificar que los campos se actualizaron correctamente
+  if (horaAgendadaInput && consultorioInput) {
+    console.log('✅ Slot seleccionado correctamente');
+    console.log('   - Fecha/Hora:', fechaHora);
+    console.log('   - Consultorio:', calendarioState.consultorioSeleccionado);
+    
+    // Mostrar confirmación visual
+    mostrarConfirmacion(slot);
+    
+    // Mostrar toast de éxito
+    if (typeof showToast === 'function') {
+      const fechaFormateada = new Date(fechaHora).toLocaleString('es-CO', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
+      showToast(`✅ Horario seleccionado: ${fechaFormateada}`, 'success');
+    }
+  } else {
+    console.error('❌ Error: No se pudieron actualizar los campos del formulario');
+  }
 }
 
 /**

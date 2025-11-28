@@ -338,9 +338,19 @@
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       
-      // Validar hora_agendada
-      if (!data.hora_agendada) {
-        showToast('⚠️ Debe seleccionar fecha y hora de la cita', 'warning');
+      // Validar hora_agendada y consultorio
+      if (!data.hora_agendada || !data.consultorio_id) {
+        showToast('⚠️ Debe seleccionar un consultorio, fecha y hora de la cita desde el calendario', 'warning');
+        
+        // Resaltar el área del calendario
+        const calendarioContainer = document.querySelector('#agendarForm .highlight');
+        if (calendarioContainer) {
+          calendarioContainer.style.border = '2px solid #ff9800';
+          calendarioContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            calendarioContainer.style.border = '';
+          }, 3000);
+        }
         return;
       }
       
