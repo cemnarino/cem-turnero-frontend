@@ -637,7 +637,7 @@
       
       // Llenar selects de walk-in y agendar
       const selects = [
-        document.querySelector('#walkinForm select[name="consultorio_id"]'),
+        document.getElementById('walkin_consultorio_id'),
         document.querySelector('#agendarForm select[name="consultorio_id"]'),
         document.getElementById('checkin-consultorio')
       ];
