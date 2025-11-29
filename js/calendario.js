@@ -166,14 +166,16 @@ async function cargarDisponibilidad() {
     calendarioState.slotsDisponibles = slots;
     
     // Preparar datos para mostrar
+    const totalPacientesAgendados = slots.reduce((sum, s) => sum + s.pacientesAgendados, 0);
     const data = {
       consultorio: consultorio.consultorio,
       nombre_medico: consultorio.nombre_medico || 'Sin médico asignado',
       fecha: fechaSeleccionada,
       dia_semana: obtenerDiaSemana(fechaSeleccionada),
       slots: slots,
-      slots_disponibles: slots.filter(s => s.disponible).length,
-      slots_ocupados: slots.filter(s => !s.disponible).length,
+      slots_disponibles: slots.length,
+      total_pacientes: totalPacientesAgendados,
+      slots_con_pacientes: slots.filter(s => s.pacientesAgendados > 0).length,
       disponible: true
     };
     
@@ -202,12 +204,12 @@ function mostrarSlots(data) {
     </div>
     <div class="info-stats">
       <span class="stat disponible">
-        <i class="material-icons">event_available</i>
-        ${data.slots_disponibles} disponibles
+        <i class="material-icons">schedule</i>
+        ${data.slots_disponibles} horarios
       </span>
       <span class="stat ocupado">
-        <i class="material-icons">event_busy</i>
-        ${data.slots_ocupados} ocupados
+        <i class="material-icons">group</i>
+        ${data.total_pacientes} pacientes agendados
       </span>
     </div>
   `;
@@ -263,13 +265,15 @@ function crearBloqueSlots(titulo, slots) {
   slots.forEach(slot => {
     const slotBtn = document.createElement('button');
     slotBtn.type = 'button';
-    slotBtn.className = `slot-btn ${slot.disponible ? 'disponible' : 'ocupado'}`;
-    slotBtn.textContent = slot.hora;
-    slotBtn.disabled = !slot.disponible;
+    slotBtn.className = `slot-btn disponible ${slot.pacientesAgendados > 0 ? 'con-pacientes' : ''}`;
     
-    if (slot.disponible) {
-      slotBtn.addEventListener('click', () => seleccionarSlot(slot));
-    }
+    // Mostrar hora y contador de pacientes
+    slotBtn.innerHTML = `
+      <span class="slot-hora">${slot.hora}</span>
+      ${slot.pacientesAgendados > 0 ? `<span class="slot-contador">(${slot.pacientesAgendados})</span>` : ''}
+    `;
+    
+    slotBtn.addEventListener('click', () => seleccionarSlot(slot));
     
     // Marcar si está seleccionado
     if (calendarioState.slotSeleccionado?.hora === slot.hora) {
@@ -384,17 +388,18 @@ function generarSlots(fecha, citasAgendadas) {
     while (hora < horaFin || (hora === horaFin && min <= minFin)) {
       const horaStr = `${hora.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       
-      // Verificar si este slot está ocupado
-      const estaOcupado = citasAgendadas.some(cita => {
+      // Contar cuántos pacientes están agendados en este slot
+      const pacientesEnSlot = citasAgendadas.filter(cita => {
         if (!cita.hora_agendada) return false;
         const horaCita = new Date(cita.hora_agendada);
         const horaSlot = `${horaCita.getHours().toString().padStart(2, '0')}:${horaCita.getMinutes().toString().padStart(2, '0')}`;
         return horaSlot === horaStr;
-      });
+      }).length;
       
       slots.push({
         hora: horaStr,
-        disponible: !estaOcupado
+        disponible: true, // Siempre disponible para permitir múltiples pacientes
+        pacientesAgendados: pacientesEnSlot
       });
       
       // Avanzar 25 minutos
