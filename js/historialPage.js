@@ -277,7 +277,7 @@
     lista.forEach((p) => {
       const cons = consultorios[p.consultorio_id] || p.consultorio; // Soporte para datos incluidos del backend
 
-      // Usar el nuevo campo en_atencion del backend
+      // Determinar estado del paciente
       let badgeClass, badgeText;
       if (p.en_atencion) {
         badgeClass = 'chip en-atencion';
@@ -285,7 +285,12 @@
       } else if (p.atendido) {
         badgeClass = 'chip atendido';
         badgeText = 'Atendido';
+      } else if (!p.checked_in || p.turno === 0) {
+        // Paciente agendado: no ha llegado o no tiene turno asignado
+        badgeClass = 'chip agendado';
+        badgeText = 'Agendado';
       } else {
+        // Paciente con turno asignado esperando ser llamado
         badgeClass = 'chip pendiente';
         badgeText = 'En Espera';
       }

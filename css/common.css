@@ -336,6 +336,11 @@ table button[onclick*='Hide'] {
   color: #fff;
 }
 
+.chip.agendado {
+  background: #8b5cf6;
+  color: #fff;
+}
+
 .chip.atencion {
   background: #93c5fd;
   color: #1e40af;
