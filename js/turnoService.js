@@ -22,6 +22,8 @@ window.turnoService = {
     const params = new URLSearchParams({
       atendido: false,
       is_visible: true,
+      checked_in: true,  // 🔥 CRÍTICO: Solo pacientes que llegaron
+      solo_hoy: true,     // 🔥 CRÍTICO: Solo pacientes de hoy
       limit: CONFIG.APP.MAX_PATIENTS_PER_CONSULTORIO,
     });
     

@@ -100,7 +100,27 @@
 
       // Cargar pacientes en espera
       const all = await turnoService.getPacientesEnEspera(consultorioId);
-      const filtered = all.filter((p) => !p.atendido && p.turno !== t.turn);
+      
+      // 🔥 FILTROS CRÍTICOS: Solo pacientes válidos
+      const filtered = all.filter((p) => {
+        // Debe tener hora_entrada válida (no NULL ni epoch 0)
+        const tieneHoraEntrada = p.hora_entrada && 
+                                 new Date(p.hora_entrada).getFullYear() > 1970;
+        
+        // Debe haber hecho check-in
+        const hizoCheckin = p.checked_in === true;
+        
+        // No debe estar atendido
+        const noAtendido = !p.atendido;
+        
+        // No debe ser el turno actual
+        const noEsTurnoActual = p.turno !== t.turn;
+        
+        // Debe tener turno asignado
+        const tieneTurno = p.turno > 0;
+        
+        return tieneHoraEntrada && hizoCheckin && noAtendido && noEsTurnoActual && tieneTurno;
+      });
 
       // Ordenar por hora de entrada: el último en llegar aparece al final
       filtered.sort(
