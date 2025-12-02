@@ -4,38 +4,88 @@
   const tbody = document.querySelector('#pacienteTable tbody');
   const filterInput = document.getElementById('pacienteFilter');
   const noData = document.getElementById('noPacienteData');
+  const paginationContainer = document.getElementById('pacientePaginationContainer');
 
-  let rows = [];
   let consultorios = {};
+  let pagination = null;
+  let currentPage = 1;
+  let perPage = 20;
+  let searchTerm = '';
+  let searchTimeout = null;
 
-  eventBus.on('refresh-pacientes', load);
-
-  filterInput.addEventListener('input', applyFilter);
-
-  async function load() {
-    const [pac, cons] = await Promise.all([
-      pacienteService.list(),
-      consultorioService.list(),
-    ]);
-    rows = pac.filter((p) => p.is_visible);
-    consultorios = {};
-    cons.filter((c) => c.is_visible).forEach((c) => (consultorios[c.id] = c));
-    applyFilter();
+  // Inicializar paginación
+  function initPagination() {
+    if (paginationContainer && window.PaginationComponent) {
+      pagination = new PaginationComponent('pacientePaginationContainer', {
+        perPage: perPage,
+        onPageChange: (page, newPerPage) => {
+          currentPage = page;
+          perPage = newPerPage;
+          loadPacientes();
+        },
+        showPageInfo: true,
+        showPerPageSelector: true,
+        perPageOptions: [10, 20, 50, 100]
+      });
+    }
   }
 
-  function applyFilter() {
-    const term = filterInput.value.toLowerCase();
-    const filtered = rows.filter(
-      (p) =>
-        pacienteService.getNombreCompleto(p).toLowerCase().includes(term) ||
-        (p.numero_documento || p.cedula || '').toString().includes(term)
-    );
-    render(filtered);
+  eventBus.on('refresh-pacientes', () => {
+    currentPage = 1;
+    loadPacientes();
+  });
+
+  filterInput.addEventListener('input', () => {
+    // Debounce la búsqueda
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchTerm = filterInput.value.trim();
+      currentPage = 1;
+      loadPacientes();
+    }, 400);
+  });
+
+  async function loadPacientes() {
+    try {
+      // Cargar consultorios si no están cargados
+      if (Object.keys(consultorios).length === 0) {
+        const cons = await consultorioService.list();
+        cons.filter((c) => c.is_visible).forEach((c) => (consultorios[c.id] = c));
+      }
+
+      // Preparar parámetros de búsqueda
+      const params = {
+        page: currentPage,
+        per_page: perPage,
+        is_visible: true
+      };
+
+      // Agregar término de búsqueda si existe
+      if (searchTerm) {
+        params.texto = searchTerm;
+      }
+
+      // Usar el endpoint de búsqueda paginada
+      const resultado = await pacienteService.buscar(params);
+
+      // Actualizar paginación
+      if (pagination) {
+        pagination.update(resultado.total || 0);
+      }
+
+      // Renderizar tabla
+      render(resultado.items || []);
+
+    } catch (error) {
+      console.error('Error cargando pacientes:', error);
+      showToast('Error al cargar pacientes', 'error');
+    }
   }
 
   function render(list) {
     tbody.innerHTML = '';
     noData.style.display = list.length ? 'none' : 'block';
+
     list.forEach((p) => {
       const tr = document.createElement('tr');
       const cons = consultorios[p.consultorio_id];
@@ -117,24 +167,24 @@
   window.toggleMenu = function(event, id) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const button = event.currentTarget;
     const menu = document.getElementById(`menu-${id}`);
     const allMenus = document.querySelectorAll('.dropdown-menu');
-    
+
     // Cerrar todos los demás menús
     allMenus.forEach(m => {
       if (m.id !== `menu-${id}`) {
         m.classList.remove('show');
       }
     });
-    
+
     // Calcular posición del menú
     const rect = button.getBoundingClientRect();
     const menuHeight = 150; // Altura aproximada del menú
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    
+
     // Decidir si mostrar arriba o abajo
     if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
       // Mostrar arriba
@@ -143,9 +193,9 @@
       // Mostrar abajo
       menu.style.top = rect.bottom + 'px';
     }
-    
+
     menu.style.left = (rect.right - 180) + 'px'; // 180px = ancho del menú
-    
+
     // Toggle del menú actual
     menu.classList.toggle('show');
   };
@@ -156,7 +206,7 @@
     if (e.target.closest('.dropdown-menu') || e.target.closest('.menu-btn')) {
       return;
     }
-    
+
     document.querySelectorAll('.dropdown-menu').forEach(menu => {
       menu.classList.remove('show');
     });
@@ -164,18 +214,18 @@
 
   // Función para ver detalles - Navega a vista dedicada
   window.viewDetails = async (id) => {
-    console.log('👁️ Ver detalles llamado con ID:', id);
+    console.log('Ver detalles llamado con ID:', id);
     try {
       const p = await pacienteService.get(id);
-      console.log('✅ Paciente obtenido:', p);
+      console.log('Paciente obtenido:', p);
       // Obtener historial del paciente por documento
       const historial = await fetchPatientHistory(p.numero_documento || p.cedula);
-      console.log('📜 Historial obtenido:', historial.length, 'visitas');
-      
+      console.log('Historial obtenido:', historial.length, 'visitas');
+
       // Navegar a la vista de detalles
       navigateToDetailView(p, historial);
     } catch (error) {
-      console.error('❌ Error al cargar detalles:', error);
+      console.error('Error al cargar detalles:', error);
       showToast('Error al cargar detalles del paciente');
     }
   };
@@ -185,45 +235,45 @@
     // Ocultar vista de pacientes y mostrar vista de detalles
     document.getElementById('pacientes-view').style.display = 'none';
     document.getElementById('paciente-detalle-view').style.display = 'block';
-    
+
     // Llenar información del paciente
     fillPatientDetails(paciente, historial);
-    
+
     // Configurar botón de volver
     document.getElementById('btnVolverListado').onclick = () => {
       document.getElementById('paciente-detalle-view').style.display = 'none';
       document.getElementById('pacientes-view').style.display = 'block';
     };
   }
-  
+
   // Llenar datos del paciente en la vista
   function fillPatientDetails(p, historial) {
     const cons = consultorios[p.consultorio_id];
     const nombreCompleto = pacienteService.getNombreCompleto(p);
-    
+
     // Información Personal
     document.getElementById('detalle-nombre').textContent = nombreCompleto;
     document.getElementById('detalle-documento').textContent = p.numero_documento || p.cedula || 'N/A';
     document.getElementById('detalle-tipo-doc').textContent = p.tipo_documento || 'N/A';
     document.getElementById('detalle-contacto').textContent = p.contacto || 'N/A';
-    
+
     // Seguridad Social
     document.getElementById('detalle-eps').textContent = p.eps || 'N/A';
     document.getElementById('detalle-afp').textContent = p.afp || 'N/A';
     document.getElementById('detalle-arl').textContent = p.arl || 'N/A';
-    
+
     // Información Laboral
     document.getElementById('detalle-empresa').textContent = p.empresa || 'N/A';
     document.getElementById('detalle-cargo').textContent = p.cargo || 'N/A';
     document.getElementById('detalle-responsable').textContent = p.responsable_empresa || 'N/A';
-    
+
     // Información de Consulta
     document.getElementById('detalle-examen').textContent = p.tipo_examen || 'N/A';
     document.getElementById('detalle-consultorio').textContent = cons ? cons.consultorio : 'N/A';
     document.getElementById('detalle-turno').textContent = p.turno || 'Sin asignar';
     document.getElementById('detalle-valor').textContent = `$${p.valor.toLocaleString('es-CO')}`;
     document.getElementById('detalle-observacion').textContent = p.observacion || 'Sin observaciones';
-    
+
     // Estado
     let estadoText = 'En Espera';
     if (p.en_atencion) {
@@ -232,35 +282,35 @@
       estadoText = 'Atendido';
     }
     document.getElementById('detalle-estado').textContent = estadoText;
-    
+
     // Llenar historial
     fillHistorial(p, historial);
   }
-  
+
   // Llenar historial en la vista de detalles
   function fillHistorial(currentPatient, historial) {
     const tbody = document.getElementById('historial-tbody');
     const noHistorial = document.getElementById('no-historial');
     const table = document.getElementById('historial-table');
-    
+
     if (!historial || historial.length === 0) {
       table.style.display = 'none';
       noHistorial.style.display = 'block';
       return;
     }
-    
+
     table.style.display = 'table';
     noHistorial.style.display = 'none';
-    
+
     tbody.innerHTML = historial.map(visit => {
       const visitCons = consultorios[visit.consultorio_id];
       const visitDate = visit.hora_entrada ? new Date(visit.hora_entrada) : (visit.hora_agendada ? new Date(visit.hora_agendada) : null);
       const isCurrentVisit = visit.id === currentPatient.id;
-      
+
       let estadoText = 'En Espera';
       if (visit.en_atencion) estadoText = 'En Atención';
       else if (visit.atendido) estadoText = 'Atendido';
-      
+
       return `
         <tr class="${isCurrentVisit ? 'current-visit' : ''}">
           <td>${visitDate ? visitDate.toLocaleDateString('es-CO') + ' ' + visitDate.toLocaleTimeString('es-CO', {hour: '2-digit', minute: '2-digit'}) : 'N/A'}</td>
@@ -276,19 +326,17 @@
   // Función para obtener historial del paciente
   async function fetchPatientHistory(documento) {
     try {
-      const response = await fetch(`${CONFIG.SERVER.HTTP_BASE_URL}/pacientes/`);
-      const allPatients = await response.json();
-      
-      // Filtrar todas las visitas del paciente por documento
-      return allPatients.filter(pac => 
-        (pac.numero_documento === documento || pac.cedula === documento) &&
-        pac.is_visible
-      ).sort((a, b) => {
-        // Usar hora_entrada o hora_agendada para ordenar
-        const dateA = new Date(a.hora_entrada || a.hora_agendada || 0);
-        const dateB = new Date(b.hora_entrada || b.hora_agendada || 0);
-        return dateB - dateA; // Más reciente primero
-      });
+      // Usar endpoint de búsqueda por documento
+      const historial = await pacienteService.buscarPorCedula(documento);
+
+      // Filtrar y ordenar
+      return (Array.isArray(historial) ? historial : [])
+        .filter(pac => pac.is_visible)
+        .sort((a, b) => {
+          const dateA = new Date(a.hora_entrada || a.hora_agendada || 0);
+          const dateB = new Date(b.hora_entrada || b.hora_agendada || 0);
+          return dateB - dateA; // Más reciente primero
+        });
     } catch (error) {
       console.error('Error al obtener historial:', error);
       return [];
@@ -296,14 +344,14 @@
   }
 
   window.editPac = async (id) => {
-    console.log('✏️ Editar llamado con ID:', id);
+    console.log('Editar llamado con ID:', id);
     try {
       const p = await pacienteService.get(id);
-      console.log('✅ Paciente obtenido para editar:', p);
+      console.log('Paciente obtenido para editar:', p);
       eventBus.emit('edit-paciente', p);
-      console.log('📢 Evento edit-paciente emitido');
+      console.log('Evento edit-paciente emitido');
     } catch (error) {
-      console.error('❌ Error al cargar paciente:', error);
+      console.error('Error al cargar paciente:', error);
       showToast('Error al cargar paciente');
     }
   };
@@ -313,7 +361,7 @@
     await pacienteService.hide(id);
     showToast('Paciente oculto');
     // Actualizar todas las vistas relacionadas
-    load();
+    loadPacientes();
     eventBus.emit('refresh-turnos');
     eventBus.emit('refresh-historial');
     eventBus.emit('refresh-informante');
@@ -354,7 +402,7 @@
       showToast('Paciente eliminado correctamente');
 
       // Actualizar todas las vistas relacionadas
-      load();
+      loadPacientes();
       eventBus.emit('refresh-turnos');
       eventBus.emit('refresh-historial');
       eventBus.emit('refresh-informante');
@@ -368,13 +416,15 @@
     }
   };
 
-  function showToast(msg) {
+  function showToast(msg, type = 'info') {
     const t = document.createElement('div');
-    t.className = 'toast';
+    t.className = `toast ${type}`;
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 3000);
   }
 
-  load();
+  // Inicialización
+  initPagination();
+  loadPacientes();
 })();

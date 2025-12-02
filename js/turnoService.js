@@ -23,7 +23,8 @@ window.turnoService = {
       atendido: false,
       is_visible: true,
       checked_in: true,  // 🔥 CRÍTICO: Solo pacientes que llegaron
-      solo_hoy: true,     // 🔥 CRÍTICO: Solo pacientes de hoy
+      solo_hoy: true,    // 🔥 CRÍTICO: Solo pacientes de hoy
+      con_turno: true,   // 🔥 CRÍTICO: Solo pacientes con turno asignado (turno > 0)
       limit: CONFIG.APP.MAX_PATIENTS_PER_CONSULTORIO,
     });
     
