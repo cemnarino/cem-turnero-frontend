@@ -98,14 +98,14 @@
       } else if (p.atendido) {
         badgeClass = 'chip atendido';
         badgeText = 'Atendido';
-      } else if (!p.checked_in || p.turno === 0) {
-        // Paciente agendado: no ha llegado o no tiene turno asignado
-        badgeClass = 'chip agendado';
-        badgeText = 'Agendado';
-      } else {
+      } else if (p.turno > 0) {
         // Paciente con turno asignado esperando ser llamado
         badgeClass = 'chip pendiente';
         badgeText = 'En Espera';
+      } else {
+        // Paciente agendado: turno = 0, no ha llegado aún
+        badgeClass = 'chip agendado';
+        badgeText = 'Agendado';
       }
 
       const nombreCompleto = pacienteService.getNombreCompleto(p);
